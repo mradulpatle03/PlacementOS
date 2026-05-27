@@ -1,0 +1,22 @@
+{
+  "name": "placementos-backend",
+  "version": "1.0.0",
+  "description": "PlacementOS Backend API",
+  "main": "src/app.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5"
+  }
+}
