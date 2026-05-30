@@ -21,6 +21,7 @@
     "forceExit": true
   },
   "dependencies": {
+    "axios": "^1.16.1",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
@@ -34,7 +35,9 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
     "morgan": "^1.10.1",
+    "multer": "^2.1.1",
     "nodemailer": "^8.0.9",
+    "pdf-parse": "^2.4.5",
     "winston": "^3.19.0"
   },
   "devDependencies": {

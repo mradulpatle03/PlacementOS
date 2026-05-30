@@ -10,6 +10,9 @@ const { connectRedis } = require("./config/redis");
 const { errorHandler } = require("./middlewares/errorHandler");
 const healthRouter = require("./routes/health.routes");
 const authRouter = require("./routes/auth.routes");
+const studentRouter = require('./routes/student.routes');
+const recruiterRouter = require('./routes/recruiter.routes');
+const resumeRouter = require('./routes/resume.routes');
 
 const app = express();
 
@@ -27,6 +30,9 @@ app.use(cookieParser());
 // Routes
 app.use("/api/v1/health", healthRouter);
 app.use("/api/v1/auth", authRouter);
+app.use('/api/v1/students', studentRouter);
+app.use('/api/v1/recruiters', recruiterRouter);
+app.use('/api/v1/resumes', resumeRouter);
 
 // 404
 app.use((req, res) => {

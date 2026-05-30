@@ -15,6 +15,13 @@ import Dashboard from "@/pages/Dashboard";
 import Unauthorized from "@/pages/Unauthorized";
 import NotFound from "@/pages/NotFound";
 
+import StudentProfile from "@/pages/student/Profile";
+import ResumeManager from "@/pages/student/ResumeManager";
+
+import RecruiterOnboarding from "@/pages/recruiter/Onboarding";
+import RecruiterProfile from "@/pages/recruiter/Profile";
+import RecruiterVerification from "@/pages/admin/RecruiterVerification";
+
 export default function AppRouter() {
   return (
     <Routes>
@@ -110,7 +117,44 @@ export default function AppRouter() {
         <Route
           path="/profile"
           element={
-            <div className="p-4 text-muted-foreground">Profile — Day 17</div>
+            <RoleRoute roles={["student"]}>
+              <StudentProfile />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/resumes"
+          element={
+            <RoleRoute roles={["student"]}>
+              <ResumeManager />
+            </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/onboarding"
+          element={
+            <RoleRoute roles={["recruiter"]}>
+              <RecruiterOnboarding />
+            </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/recruiter/profile"
+          element={
+            <RoleRoute roles={["recruiter"]}>
+              <RecruiterProfile />
+            </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/admin/recruiters"
+          element={
+            <RoleRoute roles={["tpo", "admin"]}>
+              <RecruiterVerification />
+            </RoleRoute>
           }
         />
       </Route>

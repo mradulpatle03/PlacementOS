@@ -20,6 +20,15 @@ const recruiterSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    linkedinProfile: {
+      type: String,
+      trim: true,
+    },
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
     isVerified: {
       type: Boolean,
       default: false,
@@ -29,6 +38,7 @@ const recruiterSchema = new mongoose.Schema(
       ref: 'User',
     },
     verifiedAt: Date,
+    rejectionReason: String,   // if TPO rejects verification
   },
   { timestamps: true }
 );

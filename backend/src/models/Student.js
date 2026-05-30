@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
 const projectSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: String,
-  techStack: [String],
-  link: String,
+  title: { type: String, required: true, trim: true },
+  description: { type: String, trim: true },
+  techStack: [{ type: String, trim: true }],
+  link: { type: String, trim: true },
 });
 
 const resumeRefSchema = new mongoose.Schema({
-  label: String,          // e.g. "General", "SDE Focus"
+  label: { type: String, trim: true, default: 'Resume' },
   cloudinaryUrl: String,
   publicId: String,
   isPrimary: { type: Boolean, default: false },
@@ -26,7 +26,7 @@ const studentSchema = new mongoose.Schema(
     rollNumber: {
       type: String,
       unique: true,
-      sparse: true,       // allows multiple nulls
+      sparse: true,
       trim: true,
     },
     branch: {
@@ -35,6 +35,8 @@ const studentSchema = new mongoose.Schema(
     },
     graduationYear: {
       type: Number,
+      min: 2000,
+      max: 2100,
     },
     cgpa: {
       type: Number,
@@ -46,20 +48,19 @@ const studentSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-    skills: [String],
+    skills: [{ type: String, trim: true }],
     projects: [projectSchema],
     resumes: [resumeRefSchema],
     socialLinks: {
-      linkedin: String,
-      github: String,
-      portfolio: String,
+      linkedin: { type: String, trim: true },
+      github: { type: String, trim: true },
+      portfolio: { type: String, trim: true },
     },
     placementStatus: {
       type: String,
       enum: ['unplaced', 'placed', 'dream_placed'],
       default: 'unplaced',
     },
-    // populated as drives progress
     offeredBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Company' }],
   },
   { timestamps: true }
