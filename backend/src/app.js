@@ -13,6 +13,8 @@ const authRouter = require("./routes/auth.routes");
 const studentRouter = require('./routes/student.routes');
 const recruiterRouter = require('./routes/recruiter.routes');
 const resumeRouter = require('./routes/resume.routes');
+const companyRouter = require('./routes/company.routes');
+const driveRouter = require('./routes/drive.routes');
 
 const app = express();
 
@@ -33,6 +35,8 @@ app.use("/api/v1/auth", authRouter);
 app.use('/api/v1/students', studentRouter);
 app.use('/api/v1/recruiters', recruiterRouter);
 app.use('/api/v1/resumes', resumeRouter);
+app.use('/api/v1/companies', companyRouter);
+app.use('/api/v1/drives', driveRouter);
 
 // 404
 app.use((req, res) => {

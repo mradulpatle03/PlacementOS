@@ -1,4 +1,4 @@
-const cloudinary = require('../config/cloudinary');
+const cloudinary = require("../config/cloudinary");
 
 // upload a buffer directly to cloudinary — no temp files
 const uploadBufferToCloudinary = (buffer, options = {}) => {
@@ -23,4 +23,17 @@ const deleteFromCloudinary = async (publicId) => {
   }
 };
 
-module.exports = { uploadBufferToCloudinary, deleteFromCloudinary };
+const uploadImageToCloudinary = (buffer, options = {}) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { resource_type: "image", ...options },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      },
+    );
+    stream.end(buffer);
+  });
+};
+
+module.exports = { uploadBufferToCloudinary, deleteFromCloudinary, uploadImageToCloudinary };

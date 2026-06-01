@@ -22,6 +22,13 @@ import RecruiterOnboarding from "@/pages/recruiter/Onboarding";
 import RecruiterProfile from "@/pages/recruiter/Profile";
 import RecruiterVerification from "@/pages/admin/RecruiterVerification";
 
+import CompanyList from "@/pages/tpo/CompanyList";
+import CompanyDetail from "@/pages/tpo/CompanyDetail";
+
+import DriveList from "@/pages/drives/DriveList";
+import CreateDrive from "@/pages/drives/CreateDrive";
+import DriveDetail from '@/pages/drives/DriveDetail';
+
 export default function AppRouter() {
   return (
     <Routes>
@@ -77,10 +84,16 @@ export default function AppRouter() {
         <Route
           path="/companies"
           element={
-            <RoleRoute roles={["tpo", "admin"]}>
-              <div className="p-4 text-muted-foreground">
-                Companies — Day 26
-              </div>
+            <RoleRoute roles={["tpo", "admin", "coordinator", "recruiter"]}>
+              <CompanyList />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/companies/:id"
+          element={
+            <RoleRoute roles={["tpo", "admin", "coordinator", "recruiter"]}>
+              <CompanyDetail />
             </RoleRoute>
           }
         />
@@ -108,12 +121,7 @@ export default function AppRouter() {
         />
 
         {/* Shared routes */}
-        <Route
-          path="/drives"
-          element={
-            <div className="p-4 text-muted-foreground">Drives — Day 27</div>
-          }
-        />
+        <Route path="/drives" element={<DriveList />} />
         <Route
           path="/profile"
           element={
@@ -157,11 +165,21 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
+
+        <Route
+          path="/drives/create"
+          element={
+            <RoleRoute roles={["tpo", "admin"]}>
+              <CreateDrive />
+            </RoleRoute>
+          }
+        />
       </Route>
 
       {/* Misc */}
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/drives/:id" element={<DriveDetail />} />
     </Routes>
   );
 }

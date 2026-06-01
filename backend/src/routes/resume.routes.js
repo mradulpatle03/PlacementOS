@@ -14,7 +14,7 @@ const {
   validate,
   uploadResumeSchema,
 } = require("../validators/resume.validator");
-const upload = require("../config/multer");
+const { upload } = require('../config/multer');
 const handleMulterError = require("../middlewares/multerError");
 
 // Student: own resumes
