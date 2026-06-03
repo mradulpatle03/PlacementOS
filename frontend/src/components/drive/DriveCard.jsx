@@ -8,12 +8,17 @@ import {
   getDriveCTCRange,
   getDeadlineStatus,
 } from "@/lib/driveUtils";
+import { EligibilityBadge } from './EligibilityBadge';
+import { useSelector } from 'react-redux';
 
 export default function DriveCard({ drive, actions }) {
   const deadline = getDeadlineStatus(drive.applicationDeadline);
   const ctcRange = getDriveCTCRange(drive.roles);
   const totalOpenings =
     drive.roles?.reduce((s, r) => s + (r.openings || 1), 0) || 0;
+
+  const { user } = useSelector((state) => state.auth);
+  const isStudent = isAuthenticated && user?.role === 'student';
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -65,6 +70,7 @@ export default function DriveCard({ drive, actions }) {
                   {role.title}
                 </Badge>
               ))}
+              {isStudent && <EligibilityBadge driveId={drive._id} />}
               {drive.roles?.length > 3 && (
                 <Badge variant="outline" className="text-xs">
                   +{drive.roles.length - 3} more

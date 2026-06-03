@@ -27,7 +27,11 @@ import CompanyDetail from "@/pages/tpo/CompanyDetail";
 
 import DriveList from "@/pages/drives/DriveList";
 import CreateDrive from "@/pages/drives/CreateDrive";
-import DriveDetail from '@/pages/drives/DriveDetail';
+import DriveDetail from "@/pages/drives/DriveDetail";
+
+import MyApplications from "../pages/student/MyApplications";
+import DriveApplicants from "../pages/tpo/DriveApplicants";
+
 
 export default function AppRouter() {
   return (
@@ -108,14 +112,21 @@ export default function AppRouter() {
           }
         />
 
+        <Route
+          path="/tpo/drives/:driveId/applicants"
+          element={
+            <RoleRoute roles={["tpo"]}>
+              <DriveApplicants />
+            </RoleRoute>
+          }
+        />
+
         {/* Student only */}
         <Route
           path="/applications"
           element={
             <RoleRoute roles={["student"]}>
-              <div className="p-4 text-muted-foreground">
-                Applications — Day 36
-              </div>
+              <MyApplications />
             </RoleRoute>
           }
         />

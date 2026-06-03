@@ -28,6 +28,8 @@ import EligibilityChecker from "@/components/drive/EligibilityChecker";
 import { driveAPI } from "@/api/drive.api";
 import { studentAPI } from "@/api/student.api";
 import { getDriveCTCRange, getDeadlineStatus } from "@/lib/driveUtils";
+import ApplyModal from "../../components/drive/ApplyModal";
+import { EligibilityBadge } from "../../components/drive/EligibilityBadge";
 
 export default function DriveDetail() {
   const { id } = useParams();
@@ -37,6 +39,7 @@ export default function DriveDetail() {
   const isStudent = user?.role === "student";
   const isRecruiter = user?.role === "recruiter";
   const [jdPreview, setJdPreview] = useState(false);
+  const [applyOpen, setApplyOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["drive", id],
@@ -107,6 +110,15 @@ export default function DriveDetail() {
                     <Pencil className="h-4 w-4 mr-1" /> Edit
                   </Link>
                 </Button>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    navigate(`/tpo/drives/${drive._id}/applicants`)
+                  }
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  View Applicants
+                </Button>
                 <DriveStatusControl
                   driveId={id}
                   status={drive.status}
@@ -175,9 +187,21 @@ export default function DriveDetail() {
                 {new Date(drive.applicationDeadline).toLocaleDateString()}
               </p>
             </div>
-            <Button asChild>
-              <Link to={`/drives/${id}/apply`}>Apply Now</Link>
-            </Button>
+            {isStudent && drive?.status === "open" && (
+              <div className="flex items-center gap-3">
+                <EligibilityBadge driveId={drive._id} />
+                <Button onClick={() => setApplyOpen(true)}>Apply Now</Button>
+              </div>
+            )}
+
+            {/* Apply Modal */}
+            {isStudent && (
+              <ApplyModal
+                open={applyOpen}
+                onClose={() => setApplyOpen(false)}
+                drive={drive}
+              />
+            )}
           </CardContent>
         </Card>
       )}
