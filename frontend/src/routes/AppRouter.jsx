@@ -32,6 +32,11 @@ import DriveDetail from "@/pages/drives/DriveDetail";
 import MyApplications from "../pages/student/MyApplications";
 import DriveApplicants from "../pages/tpo/DriveApplicants";
 import PipelineBoard from "@/pages/tpo/PipelineBoard";
+import AssessmentTaker from "@/pages/student/AssessmentTaker";
+
+import AssessmentList from "@/pages/tpo/AssessmentList";
+import AssessmentBuilder from "@/pages/tpo/AssessmentBuilder";
+import AssessmentSubmissions from "@/pages/tpo/AssessmentSubmissions";
 
 export default function AppRouter() {
   return (
@@ -128,6 +133,30 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
+        <Route
+          path="/tpo/drives/:driveId/assessments"
+          element={
+            <RoleRoute roles={["tpo", "recruiter", "admin"]}>
+              <AssessmentList />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/tpo/drives/:driveId/assessments/create"
+          element={
+            <RoleRoute roles={["tpo", "recruiter", "admin"]}>
+              <AssessmentBuilder />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/tpo/drives/:driveId/assessments/:assessmentId/submissions"
+          element={
+            <RoleRoute roles={["tpo", "recruiter", "admin"]}>
+              <AssessmentSubmissions />
+            </RoleRoute>
+          }
+        />
 
         {/* Student only */}
         <Route
@@ -190,6 +219,17 @@ export default function AppRouter() {
           element={
             <RoleRoute roles={["tpo", "admin"]}>
               <CreateDrive />
+            </RoleRoute>
+          }
+        />
+      </Route>
+      {/* Protected routes WITHOUT AppLayout — fullscreen */}
+      <Route element={<ProtectedRoute />}>
+        <Route
+          path="/assessments/:assessmentId/take"
+          element={
+            <RoleRoute roles={["student"]}>
+              <AssessmentTaker />
             </RoleRoute>
           }
         />

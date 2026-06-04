@@ -1,50 +1,54 @@
-require('dotenv').config();
-const express     = require('express');
-const http        = require('http');
-const cors        = require('cors');
-const cookieParser = require('cookie-parser');
+require("dotenv").config();
+const express = require("express");
+const http = require("http");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
-const { PORT, FRONTEND_URL } = require('./config/env');
-const connectDB  = require('./config/db');
-const { connectRedis } = require('./config/redis');
-const { initSocket } = require('./sockets');
+const { PORT, FRONTEND_URL } = require("./config/env");
+const connectDB = require("./config/db");
+const { connectRedis } = require("./config/redis");
+const { initSocket } = require("./sockets");
 
-const { errorHandler } = require('./middlewares/errorHandler');
-const healthRouter      = require('./routes/health.routes');
-const authRouter        = require('./routes/auth.routes');
-const studentRouter     = require('./routes/student.routes');
-const recruiterRouter   = require('./routes/recruiter.routes');
-const resumeRouter      = require('./routes/resume.routes');
-const companyRouter     = require('./routes/company.routes');
-const driveRouter       = require('./routes/drive.routes');
-const eligibilityRouter = require('./routes/eligibility.routes');
-const applicationRouter = require('./routes/application.routes');
-const pipelineRouter    = require('./routes/pipeline.routes');
+const { errorHandler } = require("./middlewares/errorHandler");
+const healthRouter = require("./routes/health.routes");
+const authRouter = require("./routes/auth.routes");
+const studentRouter = require("./routes/student.routes");
+const recruiterRouter = require("./routes/recruiter.routes");
+const resumeRouter = require("./routes/resume.routes");
+const companyRouter = require("./routes/company.routes");
+const driveRouter = require("./routes/drive.routes");
+const eligibilityRouter = require("./routes/eligibility.routes");
+const applicationRouter = require("./routes/application.routes");
+const pipelineRouter = require("./routes/pipeline.routes");
+const submissionRouter  = require('./routes/submission.routes');
+const assessmentRouter = require('./routes/assessment.routes');
 
-const app    = express();
-const server = http.createServer(app);   // ← wrap express in http.Server
+const app = express();
+const server = http.createServer(app); // wrap express in http.Server
 
-// Middlewares 
+// Middlewares
 app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes
-app.use('/api/v1/health',       healthRouter);
-app.use('/api/v1/auth',         authRouter);
-app.use('/api/v1/students',     studentRouter);
-app.use('/api/v1/recruiters',   recruiterRouter);
-app.use('/api/v1/resumes',      resumeRouter);
-app.use('/api/v1/companies',    companyRouter);
-app.use('/api/v1/drives',       driveRouter);
-app.use('/api/v1/drives',       eligibilityRouter);
-app.use('/api/v1/applications', applicationRouter); 
-app.use('/api/v1/pipeline',     pipelineRouter);
+app.use("/api/v1/health", healthRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/students", studentRouter);
+app.use("/api/v1/recruiters", recruiterRouter);
+app.use("/api/v1/resumes", resumeRouter);
+app.use("/api/v1/companies", companyRouter);
+app.use("/api/v1/drives", driveRouter);
+app.use("/api/v1/drives", eligibilityRouter);
+app.use("/api/v1/applications", applicationRouter);
+app.use("/api/v1/pipeline", pipelineRouter);
+app.use('/api/v1/submissions', submissionRouter);
+app.use('/api/v1/assessments', assessmentRouter);
 
 // 404
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' });
+  res.status(404).json({ success: false, message: "Route not found" });
 });
 
 // Global error handler
@@ -54,7 +58,7 @@ app.use(errorHandler);
 if (require.main === module) {
   connectDB();
   connectRedis();
-  require('./config/cloudinary');
+  require("./config/cloudinary");
 
   // init Socket.IO on the http server
   initSocket(server, FRONTEND_URL);

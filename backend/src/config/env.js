@@ -23,4 +23,6 @@ module.exports = {
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_USER: process.env.SMTP_USER,
   SMTP_PASS: process.env.SMTP_PASS,
+  JUDGE0_API_URL: process.env.JUDGE0_API_URL || "",
+  PISTON_API_URL: process.env.PISTON_API_URL || "https://emkc.org/api/v2/piston",
 };
