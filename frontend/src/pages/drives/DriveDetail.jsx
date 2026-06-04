@@ -30,6 +30,7 @@ import { studentAPI } from "@/api/student.api";
 import { getDriveCTCRange, getDeadlineStatus } from "@/lib/driveUtils";
 import ApplyModal from "../../components/drive/ApplyModal";
 import { EligibilityBadge } from "../../components/drive/EligibilityBadge";
+import { Kanban } from "lucide-react";
 
 export default function DriveDetail() {
   const { id } = useParams();
@@ -125,6 +126,16 @@ export default function DriveDetail() {
                   allowedTransitions={allowedTransitions}
                 />
               </>
+            )}
+            {isTPO && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/tpo/drives/${id}/pipeline`)}
+              >
+                <Kanban className="h-4 w-4 mr-2" />
+                View Pipeline
+              </Button>
             )}
             {!isTPO && (
               <DriveStatusControl

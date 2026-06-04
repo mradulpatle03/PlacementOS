@@ -31,7 +31,7 @@ import DriveDetail from "@/pages/drives/DriveDetail";
 
 import MyApplications from "../pages/student/MyApplications";
 import DriveApplicants from "../pages/tpo/DriveApplicants";
-
+import PipelineBoard from "@/pages/tpo/PipelineBoard";
 
 export default function AppRouter() {
   return (
@@ -117,6 +117,14 @@ export default function AppRouter() {
           element={
             <RoleRoute roles={["tpo"]}>
               <DriveApplicants />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/tpo/drives/:driveId/pipeline"
+          element={
+            <RoleRoute roles={["tpo", "recruiter", "admin"]}>
+              <PipelineBoard />
             </RoleRoute>
           }
         />

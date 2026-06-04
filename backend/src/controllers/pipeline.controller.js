@@ -1,53 +1,57 @@
-const Application = require('../models/Application');
-const AppError = require('../utils/AppError');
+const Application = require("../models/Application");
+const AppError = require("../utils/AppError");
 const {
   validateStageTransition,
   STAGE_LABELS,
   PIPELINE_STAGES,
-} = require('../services/pipeline.service');
+} = require("../services/pipeline.service");
+const {
+  emitStageMoved,
+  emitBulkMoved,
+  emitApplicationRejected,
+} = require("../sockets");
 
-// ─────────────────────────────────────────────────────────────────────────────
 // PUT /api/v1/pipeline/:id/move-stage
-// Move a single application to a new pipeline stage
-// Roles: tpo, recruiter, admin
-// ─────────────────────────────────────────────────────────────────────────────
 const moveStage = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { targetStage, note = '' } = req.body;
+    const { targetStage, note = "" } = req.body;
 
-    if (!targetStage) {
-      return next(new AppError('targetStage is required', 400));
-    }
+    if (!targetStage) return next(new AppError("targetStage is required", 400));
 
     const application = await Application.findById(id);
-    if (!application) {
-      return next(new AppError('Application not found', 404));
-    }
+    if (!application) return next(new AppError("Application not found", 404));
 
-    const { valid, error } = validateStageTransition(application.status, targetStage);
-    if (!valid) {
-      return next(new AppError(error, 400));
-    }
+    const { valid, error } = validateStageTransition(
+      application.status,
+      targetStage,
+    );
+    if (!valid) return next(new AppError(error, 400));
 
     const previousStage = application.status;
 
-    // record in history
     application.stageHistory.push({
       stage: targetStage,
       movedBy: req.user._id,
       movedAt: new Date(),
       note: note.trim(),
     });
-
     application.status = targetStage;
-
-    if (targetStage === 'rejected') {
+    if (targetStage === "rejected") {
       application.stageAtExit = previousStage;
       if (note.trim()) application.remarks = note.trim();
     }
 
     await application.save();
+
+    // broadcast to all clients watching this drive
+    emitStageMoved(application.drive.toString(), {
+      applicationId: application._id,
+      previousStage,
+      currentStage: targetStage,
+      movedBy: { _id: req.user._id, name: req.user.name },
+      note: note.trim(),
+    });
 
     return res.status(200).json({
       success: true,
@@ -66,41 +70,41 @@ const moveStage = async (req, res, next) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // POST /api/v1/pipeline/bulk-move
-// Move multiple applications to the same target stage
-// Body: { applicationIds: [...], targetStage, note }
-// Roles: tpo, recruiter, admin
-// ─────────────────────────────────────────────────────────────────────────────
 const bulkMoveStage = async (req, res, next) => {
   try {
-    const { applicationIds, targetStage, note = '' } = req.body;
+    const { applicationIds, targetStage, note = "" } = req.body;
 
-    if (!Array.isArray(applicationIds) || applicationIds.length === 0) {
-      return next(new AppError('applicationIds must be a non-empty array', 400));
-    }
+    if (!Array.isArray(applicationIds) || applicationIds.length === 0)
+      return next(
+        new AppError("applicationIds must be a non-empty array", 400),
+      );
+    if (!targetStage) return next(new AppError("targetStage is required", 400));
+    if (applicationIds.length > 100)
+      return next(
+        new AppError(
+          "Cannot bulk move more than 100 applications at once",
+          400,
+        ),
+      );
 
-    if (!targetStage) {
-      return next(new AppError('targetStage is required', 400));
-    }
-
-    if (applicationIds.length > 100) {
-      return next(new AppError('Cannot bulk move more than 100 applications at once', 400));
-    }
-
-    const applications = await Application.find({ _id: { $in: applicationIds } });
-
-    if (applications.length === 0) {
-      return next(new AppError('No applications found for the provided IDs', 404));
-    }
+    const applications = await Application.find({
+      _id: { $in: applicationIds },
+    });
+    if (applications.length === 0)
+      return next(
+        new AppError("No applications found for the provided IDs", 404),
+      );
 
     const moved = [];
     const skipped = [];
     const movedAt = new Date();
 
     for (const application of applications) {
-      const { valid, error } = validateStageTransition(application.status, targetStage);
-
+      const { valid, error } = validateStageTransition(
+        application.status,
+        targetStage,
+      );
       if (!valid) {
         skipped.push({
           applicationId: application._id,
@@ -109,23 +113,18 @@ const bulkMoveStage = async (req, res, next) => {
         });
         continue;
       }
-
       const previousStage = application.status;
-
       application.stageHistory.push({
         stage: targetStage,
         movedBy: req.user._id,
         movedAt,
         note: note.trim(),
       });
-
       application.status = targetStage;
-
-      if (targetStage === 'rejected') {
+      if (targetStage === "rejected") {
         application.stageAtExit = previousStage;
         if (note.trim()) application.remarks = note.trim();
       }
-
       moved.push({
         applicationId: application._id,
         previousStage,
@@ -133,11 +132,21 @@ const bulkMoveStage = async (req, res, next) => {
       });
     }
 
-    // save only successfully moved applications
     const toSave = applications.filter((app) =>
-      moved.some((m) => m.applicationId.toString() === app._id.toString())
+      moved.some((m) => m.applicationId.toString() === app._id.toString()),
     );
     await Promise.all(toSave.map((app) => app.save()));
+
+    // broadcast once per drive (group by drive)
+    if (moved.length > 0 && toSave.length > 0) {
+      const driveId = toSave[0].drive.toString();
+      emitBulkMoved(driveId, {
+        moved,
+        targetStage,
+        targetStageLabel: STAGE_LABELS[targetStage] || targetStage,
+        movedBy: { _id: req.user._id, name: req.user.name },
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -157,34 +166,30 @@ const bulkMoveStage = async (req, res, next) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/v1/pipeline/drive/:driveId
-// All applications for a drive grouped by stage — powers the Kanban board
-// Roles: tpo, recruiter, admin
-// ─────────────────────────────────────────────────────────────────────────────
 const getPipelineByDrive = async (req, res, next) => {
   try {
     const { driveId } = req.params;
 
     const applications = await Application.find({ drive: driveId })
       .populate({
-        path: 'student',
-        select: 'rollNumber branch year cgpa backlogs',
-        populate: { path: 'user', select: 'name email' },
+        path: "student",
+        select:
+          "rollNumber branch year cgpa backlogs graduationYear placementStatus",
+        populate: { path: "user", select: "name email" },
       })
-      .populate('resume', 'label cloudinaryUrl isPrimary')
+      .populate("resume", "label cloudinaryUrl isPrimary score")
       .sort({ updatedAt: -1 })
       .lean();
 
-    // initialise all Kanban columns as empty arrays
     const grouped = {};
-    PIPELINE_STAGES.forEach((s) => { grouped[s] = []; });
-    grouped['rejected'] = [];
+    PIPELINE_STAGES.forEach((s) => {
+      grouped[s] = [];
+    });
+    grouped["rejected"] = [];
 
     applications.forEach((app) => {
-      if (grouped[app.status] !== undefined) {
-        grouped[app.status].push(app);
-      }
+      if (grouped[app.status] !== undefined) grouped[app.status].push(app);
     });
 
     return res.status(200).json({
@@ -200,57 +205,42 @@ const getPipelineByDrive = async (req, res, next) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/v1/pipeline/stages
-// Returns the canonical stage list — frontend uses this to build Kanban columns
-// ─────────────────────────────────────────────────────────────────────────────
 const getPipelineStages = (req, res) => {
   return res.status(200).json({
     success: true,
     data: {
-      stages: PIPELINE_STAGES.map((s) => ({
-        key: s,
-        label: STAGE_LABELS[s],
-      })),
+      stages: PIPELINE_STAGES.map((s) => ({ key: s, label: STAGE_LABELS[s] })),
     },
   });
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GET /api/v1/pipeline/:id/history                               [DAY 40]
-// Returns full stage history for a single application
-// Roles: tpo, recruiter, admin — student can see their own
-// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/v1/pipeline/:id/history
 const getStageHistory = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     const application = await Application.findById(id)
+      .populate({ path: "stageHistory.movedBy", select: "name email role" })
       .populate({
-        path: 'stageHistory.movedBy',
-        select: 'name email role',
-      })
-      .populate({
-        path: 'student',
-        select: 'rollNumber',
-        populate: { path: 'user', select: 'name email' },
+        path: "student",
+        select: "rollNumber",
+        populate: { path: "user", select: "name email" },
       })
       .lean();
 
-    if (!application) {
-      return next(new AppError('Application not found', 404));
-    }
+    if (!application) return next(new AppError("Application not found", 404));
 
-    // students can only see their own application history
-    if (req.user.role === 'student') {
-      const Student = require('../models/Student');
+    if (req.user.role === "student") {
+      const Student = require("../models/Student");
       const student = await Student.findOne({ user: req.user._id }).lean();
-      if (!student || application.student._id.toString() !== student._id.toString()) {
-        return next(new AppError('Access denied', 403));
-      }
+      if (
+        !student ||
+        application.student._id.toString() !== student._id.toString()
+      )
+        return next(new AppError("Access denied", 403));
     }
 
-    // enrich each history entry with a human-readable label
     const enrichedHistory = application.stageHistory.map((entry) => ({
       ...entry,
       stageLabel: STAGE_LABELS[entry.stage] || entry.stage,
@@ -261,7 +251,8 @@ const getStageHistory = async (req, res, next) => {
       data: {
         applicationId: application._id,
         currentStage: application.status,
-        currentStageLabel: STAGE_LABELS[application.status] || application.status,
+        currentStageLabel:
+          STAGE_LABELS[application.status] || application.status,
         stageAtExit: application.stageAtExit,
         remarks: application.remarks,
         history: enrichedHistory,
@@ -273,55 +264,55 @@ const getStageHistory = async (req, res, next) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PUT /api/v1/pipeline/:id/reject                                [DAY 40]
-// Dedicated reject endpoint — always requires a reason
-// Separate from move-stage so rejection reason is always enforced
-// Roles: tpo, recruiter, admin
-// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/v1/pipeline/:id/reject
 const rejectApplication = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
 
-    if (!reason || !reason.trim()) {
-      return next(new AppError('A rejection reason is required', 400));
-    }
+    if (!reason || !reason.trim())
+      return next(new AppError("A rejection reason is required", 400));
 
     const application = await Application.findById(id).populate({
-      path: 'student',
-      select: 'rollNumber',
-      populate: { path: 'user', select: 'name email' },
+      path: "student",
+      select: "rollNumber",
+      populate: { path: "user", select: "name email" },
     });
 
-    if (!application) {
-      return next(new AppError('Application not found', 404));
-    }
+    if (!application) return next(new AppError("Application not found", 404));
 
-    // validate the transition to rejected
-    const { valid, error } = validateStageTransition(application.status, 'rejected');
-    if (!valid) {
-      return next(new AppError(error, 400));
-    }
+    const { valid, error } = validateStageTransition(
+      application.status,
+      "rejected",
+    );
+    if (!valid) return next(new AppError(error, 400));
 
     const previousStage = application.status;
 
     application.stageHistory.push({
-      stage: 'rejected',
+      stage: "rejected",
       movedBy: req.user._id,
       movedAt: new Date(),
       note: reason.trim(),
     });
-
     application.stageAtExit = previousStage;
-    application.status = 'rejected';
+    application.status = "rejected";
     application.remarks = reason.trim();
 
     await application.save();
 
+    // broadcast rejection
+    emitApplicationRejected(application.drive.toString(), {
+      applicationId: application._id,
+      studentName: application.student?.user?.name,
+      rejectedFromStage: previousStage,
+      reason: reason.trim(),
+      rejectedBy: { _id: req.user._id, name: req.user.name },
+    });
+
     return res.status(200).json({
       success: true,
-      message: 'Application rejected',
+      message: "Application rejected",
       data: {
         applicationId: application._id,
         studentName: application.student?.user?.name,

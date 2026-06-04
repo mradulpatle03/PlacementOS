@@ -9,6 +9,7 @@ import {
   Settings,
   Building2,
   ShieldCheck,
+  Kanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
