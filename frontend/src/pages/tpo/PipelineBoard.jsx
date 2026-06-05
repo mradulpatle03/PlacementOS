@@ -23,7 +23,7 @@ import {
 
 import { pipelineAPI } from "@/api/pipeline.api";
 import { usePipelineFilters } from "@/hooks/usePipelineFilters";
-import { usePipelineSocket } from '@/hooks/usePipelineSocket';
+import { usePipelineSocket } from "@/hooks/usePipelineSocket";
 import KanbanColumn from "@/components/pipeline/KanbanColumn";
 import KanbanCard from "@/components/pipeline/KanbanCard";
 import CardDetailModal from "@/components/pipeline/CardDetailModal";
@@ -219,6 +219,15 @@ export default function PipelineBoard() {
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/tpo/drives/${driveId}/interviews`)}
+              className="gap-1.5"
+            >
+              <Calendar className="w-4 h-4" />
+              Interviews
             </Button>
             <div>
               <h1 className="text-xl font-bold">Recruitment Pipeline</h1>

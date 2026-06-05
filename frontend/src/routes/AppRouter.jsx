@@ -38,6 +38,9 @@ import AssessmentList from "@/pages/tpo/AssessmentList";
 import AssessmentBuilder from "@/pages/tpo/AssessmentBuilder";
 import AssessmentSubmissions from "@/pages/tpo/AssessmentSubmissions";
 
+import InterviewManager from "@/pages/tpo/InterviewManager";
+import MyInterviews from "@/pages/student/MyInterviews";
+
 export default function AppRouter() {
   return (
     <Routes>
@@ -157,6 +160,15 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
+        {/* Interview Manager — TPO + Recruiter */}
+        <Route
+          path="/tpo/drives/:driveId/interviews"
+          element={
+            <RoleRoute roles={["tpo", "recruiter", "admin"]}>
+              <InterviewManager />
+            </RoleRoute>
+          }
+        />
 
         {/* Student only */}
         <Route
@@ -164,6 +176,15 @@ export default function AppRouter() {
           element={
             <RoleRoute roles={["student"]}>
               <MyApplications />
+            </RoleRoute>
+          }
+        />
+        {/* My Interviews — Student */}
+        <Route
+          path="/interviews"
+          element={
+            <RoleRoute roles={["student"]}>
+              <MyInterviews />
             </RoleRoute>
           }
         />
@@ -183,6 +204,15 @@ export default function AppRouter() {
           element={
             <RoleRoute roles={["student"]}>
               <ResumeManager />
+            </RoleRoute>
+          }
+        />
+        {/* OA taker — student */}
+        <Route
+          path="/assessments/:assessmentId/take"
+          element={
+            <RoleRoute roles={['student']}>
+              <AssessmentTaker />
             </RoleRoute>
           }
         />
@@ -224,7 +254,7 @@ export default function AppRouter() {
         />
       </Route>
       {/* Protected routes WITHOUT AppLayout — fullscreen */}
-      <Route element={<ProtectedRoute />}>
+      {/* <Route element={<ProtectedRoute />}>
         <Route
           path="/assessments/:assessmentId/take"
           element={
@@ -233,7 +263,7 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-      </Route>
+      </Route> */}
 
       {/* Misc */}
       <Route path="/unauthorized" element={<Unauthorized />} />

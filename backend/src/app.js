@@ -20,8 +20,13 @@ const driveRouter = require("./routes/drive.routes");
 const eligibilityRouter = require("./routes/eligibility.routes");
 const applicationRouter = require("./routes/application.routes");
 const pipelineRouter = require("./routes/pipeline.routes");
-const submissionRouter  = require('./routes/submission.routes');
-const assessmentRouter = require('./routes/assessment.routes');
+const submissionRouter = require("./routes/submission.routes");
+const assessmentRouter = require("./routes/assessment.routes");
+const interviewRouter = require("./routes/interview.routes");
+const { startEmailWorker } = require("./queues/emailWorker");
+const {
+  startInterviewReminderWorker,
+} = require("./queues/interviewReminderWorker");
 
 const app = express();
 const server = http.createServer(app); // wrap express in http.Server
@@ -43,8 +48,9 @@ app.use("/api/v1/drives", driveRouter);
 app.use("/api/v1/drives", eligibilityRouter);
 app.use("/api/v1/applications", applicationRouter);
 app.use("/api/v1/pipeline", pipelineRouter);
-app.use('/api/v1/submissions', submissionRouter);
-app.use('/api/v1/assessments', assessmentRouter);
+app.use("/api/v1/submissions", submissionRouter);
+app.use("/api/v1/assessments", assessmentRouter);
+app.use("/api/v1/interviews", interviewRouter);
 
 // 404
 app.use((req, res) => {
@@ -62,6 +68,9 @@ if (require.main === module) {
 
   // init Socket.IO on the http server
   initSocket(server, FRONTEND_URL);
+
+  startEmailWorker();
+  startInterviewReminderWorker();
 
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);

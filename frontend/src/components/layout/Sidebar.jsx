@@ -9,7 +9,7 @@ import {
   Settings,
   Building2,
   ShieldCheck,
-  Kanban,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ const navItems = {
     { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/drives", icon: Briefcase, label: "Drives" },
     { to: "/applications", icon: FileText, label: "My Applications" },
+    { to: "/interviews", icon: Calendar, label: "My Interviews" }, // ← new
     { to: "/profile", icon: Settings, label: "Profile" },
     { to: "/resumes", icon: FileText, label: "My Resumes" },
   ],

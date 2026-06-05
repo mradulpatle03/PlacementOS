@@ -144,6 +144,17 @@ export default function DriveDetail() {
                 allowedTransitions={[]}
               />
             )}
+            {["tpo", "recruiter", "admin"].includes(user?.role) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/tpo/drives/${drive._id}/interviews`)}
+                className="gap-1.5"
+              >
+                <Calendar className="w-4 h-4" />
+                Interviews
+              </Button>
+            )}
           </div>
         </div>
 

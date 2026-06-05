@@ -67,4 +67,4 @@ const sendPasswordResetEmail = (to, otp) =>
     `,
   });
 
-module.exports = { sendOTPEmail, sendPasswordResetEmail };
+module.exports = { sendMail , sendOTPEmail, sendPasswordResetEmail };
