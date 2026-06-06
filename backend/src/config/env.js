@@ -1,12 +1,13 @@
 const required = ["MONGO_URI", "JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET"];
 
-required.forEach((key) => {
-  if (!process.env[key]) {
-    console.log(`Missing required env var: ${key}`);
-    process.exit(1);
-  }
-});
-
+if(process.env.NODE_ENV !== "test"){
+  required.forEach((key) => {
+    if (!process.env[key]) {
+      console.log(`Missing required env var: ${key}`);
+      process.exit(1);
+    }
+  });
+}
 module.exports = {
   PORT: process.env.PORT || 5000,
   NODE_ENV: process.env.NODE_ENV || "development",

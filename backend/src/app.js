@@ -23,10 +23,12 @@ const pipelineRouter = require("./routes/pipeline.routes");
 const submissionRouter = require("./routes/submission.routes");
 const assessmentRouter = require("./routes/assessment.routes");
 const interviewRouter = require("./routes/interview.routes");
+const notificationRouter = require('./routes/notification.routes');
 const { startEmailWorker } = require("./queues/emailWorker");
 const {
   startInterviewReminderWorker,
 } = require("./queues/interviewReminderWorker");
+const { startNotificationWorker } = require("./queues/notificationWorker");
 
 const app = express();
 const server = http.createServer(app); // wrap express in http.Server
@@ -51,6 +53,7 @@ app.use("/api/v1/pipeline", pipelineRouter);
 app.use("/api/v1/submissions", submissionRouter);
 app.use("/api/v1/assessments", assessmentRouter);
 app.use("/api/v1/interviews", interviewRouter);
+app.use('/api/v1/notifications', notificationRouter);
 
 // 404
 app.use((req, res) => {
@@ -71,6 +74,7 @@ if (require.main === module) {
 
   startEmailWorker();
   startInterviewReminderWorker();
+  startNotificationWorker();
 
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);

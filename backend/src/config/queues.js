@@ -1,8 +1,6 @@
 const { Queue, Worker, QueueEvents } = require('bullmq');
 const { REDIS_URL } = require('./env');
 
-// BullMQ needs a plain ioredis connection config, not an existing client
-// Parse the REDIS_URL into host/port so BullMQ can create its own connections
 const parseRedisUrl = (url) => {
   try {
     const u = new URL(url);
@@ -19,16 +17,13 @@ const parseRedisUrl = (url) => {
 
 const connection = parseRedisUrl(REDIS_URL);
 
-// ── Named queues ──────────────────────────────────────────────
 const QUEUE_NAMES = {
   EMAIL:              'email',
   INTERVIEW_REMINDER: 'interview-reminder',
+  NOTIFICATION:       'notification',
+  NOTIFICATION_DLQ:   'notification-dlq',
 };
 
-/**
- * Create a BullMQ Queue instance.
- * @param {string} name
- */
 const createQueue = (name) =>
   new Queue(name, {
     connection,

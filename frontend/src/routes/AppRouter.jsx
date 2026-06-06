@@ -40,6 +40,9 @@ import AssessmentSubmissions from "@/pages/tpo/AssessmentSubmissions";
 
 import InterviewManager from "@/pages/tpo/InterviewManager";
 import MyInterviews from "@/pages/student/MyInterviews";
+import Notifications from '@/pages/Notifications';
+
+import NotificationPreferences from '@/pages/NotificationPreferences';
 
 export default function AppRouter() {
   return (
@@ -91,6 +94,8 @@ export default function AppRouter() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/notifications/preferences" element={<NotificationPreferences />} />
 
         {/* TPO + Admin only — placeholder routes, pages built in later days */}
         <Route

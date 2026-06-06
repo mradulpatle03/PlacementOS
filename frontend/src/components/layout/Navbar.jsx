@@ -1,16 +1,15 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { LogOut, Bell, Sun, Moon } from 'lucide-react';
+import { LogOut, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { logout } from '@/store/authSlice';
 import { toggleTheme } from '@/store/themeSlice';
 import { useLogout } from '@/hooks/useLogout';
+import NotificationBell from '@/components/ui/NotificationBell';
 
 export default function Navbar() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { mode } = useSelector((state) => state.theme);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const handleLogout = useLogout();
 
   return (
@@ -27,9 +26,9 @@ export default function Navbar() {
 
           {isAuthenticated ? (
             <>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-4 w-4" />
-              </Button>
+              {/* live notification bell with unread badge */}
+              <NotificationBell />
+
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user?.name}
               </span>

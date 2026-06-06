@@ -10,6 +10,10 @@ const {
   uploadBufferToCloudinary,
   deleteFromCloudinary,
 } = require("../utils/cloudinaryUpload");
+const { notifyDriveOpened } = require("../queues/notificationQueue");
+const Student = require("../models/Student");
+const User = require("../models/User");
+const { checkEligibility } = require("../services/eligibility.service");
 
 // POST /api/v1/drives
 const createDrive = async (req, res, next) => {
@@ -252,6 +256,34 @@ const updateDriveStatus = async (req, res, next) => {
     const previousStatus = drive.status;
     drive.status = status;
     await drive.save();
+    // notify eligible students when drive opens
+    if (status === "open") {
+      try {
+        const students = await Student.find({})
+          .populate("user", "email name")
+          .lean();
+        const company = await require("../models/Company")
+          .findById(drive.company)
+          .lean();
+
+        for (const student of students) {
+          const { eligible } = checkEligibility(student, drive);
+          if (eligible && student.user) {
+            notifyDriveOpened(student.user._id.toString(), student.user.email, {
+              drive,
+              company: company || { name: "Company" },
+              studentName: student.user.name,
+              ctc: drive.ctc,
+            }).catch((e) => console.log("[Drive] Notify failed:", e.message));
+          }
+        }
+      } catch (notifErr) {
+        console.log(
+          "[Drive] Bulk notify failed (non-fatal):",
+          notifErr.message,
+        );
+      }
+    }
 
     console.log(
       `Drive "${drive.title}": ${previousStatus} → ${status} by ${req.user.email}`,

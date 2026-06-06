@@ -10,6 +10,8 @@ const {
   emitBulkMoved,
   emitApplicationRejected,
 } = require("../sockets");
+const { notifyApplicationStatus } = require("../queues/notificationQueue");
+const User = require("../models/User");
 
 // PUT /api/v1/pipeline/:id/move-stage
 const moveStage = async (req, res, next) => {
@@ -52,6 +54,31 @@ const moveStage = async (req, res, next) => {
       movedBy: { _id: req.user._id, name: req.user.name },
       note: note.trim(),
     });
+    // notify the student
+    try {
+      const studentUser = await User.findById(application.student)
+        .select("email name")
+        .lean();
+      if (studentUser) {
+        await notifyApplicationStatus(
+          studentUser._id.toString(),
+          studentUser.email,
+          {
+            studentName: studentUser.name,
+            drive: { _id: application.drive, title: drive?.title || "" },
+            company: { name: drive?.company?.name || "Company" },
+            newStage: newStage,
+            stageLabel: newStage.replace(/_/g, " "),
+            note: notes || "",
+          },
+        );
+      }
+    } catch (notifErr) {
+      console.log(
+        "[Pipeline] Notification failed (non-fatal):",
+        notifErr.message,
+      );
+    }
 
     return res.status(200).json({
       success: true,

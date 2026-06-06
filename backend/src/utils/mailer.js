@@ -35,36 +35,23 @@ const sendMail = async ({ to, subject, html }) => {
   }
 };
 
-// Email templates
+// ── Named senders — use centralised templates ─────────────────
 
-const sendOTPEmail = (to, otp) =>
-  sendMail({
-    to,
-    subject: 'Verify your PlacementOS account',
-    html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:auto">
-        <h2 style="color:#4f46e5">PlacementOS</h2>
-        <p>Your email verification OTP is:</p>
-        <h1 style="letter-spacing:8px;color:#4f46e5">${otp}</h1>
-        <p>This OTP expires in <strong>10 minutes</strong>.</p>
-        <p>If you didn't request this, ignore this email.</p>
-      </div>
-    `,
-  });
+const { otpEmail, welcomeEmail } = require('./emailTemplates');
 
-const sendPasswordResetEmail = (to, otp) =>
-  sendMail({
-    to,
-    subject: 'Reset your PlacementOS password',
-    html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:auto">
-        <h2 style="color:#4f46e5">PlacementOS</h2>
-        <p>Your password reset OTP is:</p>
-        <h1 style="letter-spacing:8px;color:#4f46e5">${otp}</h1>
-        <p>This OTP expires in <strong>10 minutes</strong>.</p>
-        <p>If you didn't request this, ignore this email.</p>
-      </div>
-    `,
-  });
+const sendOTPEmail = (to, otp) => {
+  const { subject, html } = otpEmail({ otp, purpose: 'verify' });
+  return sendMail({ to, subject, html });
+};
 
-module.exports = { sendMail , sendOTPEmail, sendPasswordResetEmail };
+const sendPasswordResetEmail = (to, otp) => {
+  const { subject, html } = otpEmail({ otp, purpose: 'reset' });
+  return sendMail({ to, subject, html });
+};
+
+const sendWelcomeEmail = (to, name, role) => {
+  const { subject, html } = welcomeEmail({ name, role });
+  return sendMail({ to, subject, html });
+};
+
+module.exports = { sendMail, sendOTPEmail, sendPasswordResetEmail, sendWelcomeEmail };
