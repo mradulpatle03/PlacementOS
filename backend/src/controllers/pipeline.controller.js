@@ -80,6 +80,11 @@ const moveStage = async (req, res, next) => {
       );
     }
 
+    try {
+      const { invalidateCache } = require("../utils/analyticsCache");
+      await invalidateCache("analytics:*");
+    } catch (_) {}
+
     return res.status(200).json({
       success: true,
       message: `Moved from '${STAGE_LABELS[previousStage] || previousStage}' to '${STAGE_LABELS[targetStage] || targetStage}'`,
@@ -175,6 +180,11 @@ const bulkMoveStage = async (req, res, next) => {
       });
     }
 
+    try {
+      const { invalidateCache } = require("../utils/analyticsCache");
+      await invalidateCache("analytics:*");
+    } catch (_) {}
+    
     return res.status(200).json({
       success: true,
       message: `Bulk move complete. Moved: ${moved.length}, Skipped: ${skipped.length}`,

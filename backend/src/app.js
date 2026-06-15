@@ -24,6 +24,9 @@ const submissionRouter = require("./routes/submission.routes");
 const assessmentRouter = require("./routes/assessment.routes");
 const interviewRouter = require("./routes/interview.routes");
 const notificationRouter = require('./routes/notification.routes');
+const offerRouter = require('./routes/offer.routes');
+const policyRouter = require('./routes/policy.routes');
+const analyticsRouter = require('./routes/analytics.routes');
 const { startEmailWorker } = require("./queues/emailWorker");
 const {
   startInterviewReminderWorker,
@@ -54,6 +57,9 @@ app.use("/api/v1/submissions", submissionRouter);
 app.use("/api/v1/assessments", assessmentRouter);
 app.use("/api/v1/interviews", interviewRouter);
 app.use('/api/v1/notifications', notificationRouter);
+app.use('/api/v1/offers', offerRouter);
+app.use('/api/v1/policies', policyRouter);
+app.use('/api/v1/analytics', analyticsRouter);
 
 // 404
 app.use((req, res) => {

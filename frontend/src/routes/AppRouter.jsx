@@ -37,12 +37,21 @@ import AssessmentTaker from "@/pages/student/AssessmentTaker";
 import AssessmentList from "@/pages/tpo/AssessmentList";
 import AssessmentBuilder from "@/pages/tpo/AssessmentBuilder";
 import AssessmentSubmissions from "@/pages/tpo/AssessmentSubmissions";
+import PolicyEditor from "@/pages/tpo/PolicyEditor";
 
 import InterviewManager from "@/pages/tpo/InterviewManager";
 import MyInterviews from "@/pages/student/MyInterviews";
-import Notifications from '@/pages/Notifications';
+import Notifications from "@/pages/Notifications";
+import NotificationPreferences from "@/pages/NotificationPreferences";
+import Analytics from "@/pages/tpo/Analytics";
 
-import NotificationPreferences from '@/pages/NotificationPreferences';
+import Analytics from "@/pages/tpo/Analytics";
+import BranchAnalytics from "@/pages/tpo/BranchAnalytics";
+import CompanyAnalytics from "@/pages/tpo/CompanyAnalytics";
+
+import MyOffers from "@/pages/student/MyOffers";
+import OfferManager from "@/pages/tpo/OfferManager";
+import RecruiterDashboard from "@/pages/recruiter/RecruiterDashboard";
 
 export default function AppRouter() {
   return (
@@ -95,8 +104,10 @@ export default function AppRouter() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/notifications" element={<Notifications />} />
-        <Route path="/notifications/preferences" element={<NotificationPreferences />} />
-
+        <Route
+          path="/notifications/preferences"
+          element={<NotificationPreferences />}
+        />
         {/* TPO + Admin only — placeholder routes, pages built in later days */}
         <Route
           path="/companies"
@@ -124,7 +135,6 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-
         <Route
           path="/tpo/drives/:driveId/applicants"
           element={
@@ -174,7 +184,14 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-
+        <Route
+          path="/tpo/drives/:driveId/offers"
+          element={
+            <RoleRoute roles={["tpo", "admin", "recruiter"]}>
+              <OfferManager />
+            </RoleRoute>
+          }
+        />
         {/* Student only */}
         <Route
           path="/applications"
@@ -193,7 +210,6 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-
         {/* Shared routes */}
         <Route path="/drives" element={<DriveList />} />
         <Route
@@ -216,12 +232,19 @@ export default function AppRouter() {
         <Route
           path="/assessments/:assessmentId/take"
           element={
-            <RoleRoute roles={['student']}>
+            <RoleRoute roles={["student"]}>
               <AssessmentTaker />
             </RoleRoute>
           }
         />
-
+        <Route
+          path="/offers"
+          element={
+            <RoleRoute roles={["student"]}>
+              <MyOffers />
+            </RoleRoute>
+          }
+        />
         <Route
           path="/onboarding"
           element={
@@ -230,7 +253,6 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-
         <Route
           path="/recruiter/profile"
           element={
@@ -239,7 +261,14 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-
+        <Route
+          path="/recruiter/dashboard"
+          element={
+            <RoleRoute roles={["recruiter"]}>
+              <RecruiterDashboard />
+            </RoleRoute>
+          }
+        />
         <Route
           path="/admin/recruiters"
           element={
@@ -248,12 +277,43 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-
         <Route
           path="/drives/create"
           element={
             <RoleRoute roles={["tpo", "admin"]}>
               <CreateDrive />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/tpo/policy"
+          element={
+            <RoleRoute roles={["tpo", "admin"]}>
+              <PolicyEditor />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <RoleRoute roles={["tpo", "admin", "coordinator"]}>
+              <Analytics />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/analytics/branch/:branch"
+          element={
+            <RoleRoute roles={["tpo", "admin", "coordinator"]}>
+              <BranchAnalytics />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/analytics/company/:companyId"
+          element={
+            <RoleRoute roles={["tpo", "admin", "coordinator", "recruiter"]}>
+              <CompanyAnalytics />
             </RoleRoute>
           }
         />
