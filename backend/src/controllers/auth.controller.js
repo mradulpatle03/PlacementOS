@@ -14,6 +14,7 @@ const {
 } = require("../utils/cookie");
 const { sendOTPEmail, sendPasswordResetEmail } = require("../utils/mailer");
 const { generateOTP, otpExpiry } = require("../utils/otp");
+const { log } = require("../utils/auditLogger");
 
 // Register
 const register = async (req, res, next) => {
@@ -151,8 +152,23 @@ const login = async (req, res, next) => {
     setRefreshTokenCookie(res, refreshToken);
     console.log(`Login: ${email} [${user.role}]`);
 
+    // successful login
+    await log({
+      req,
+      action: "LOGIN",
+      entity: "Auth",
+      entityId: user._id,
+      entityTitle: user.email,
+    });
+
     res.json({ success: true, message: "Login successful", accessToken, user });
   } catch (err) {
+    await log({
+      req,
+      action: "LOGIN_FAILED",
+      entity: "Auth",
+      meta: { email: req.body.email },
+    });
     next(err);
   }
 };

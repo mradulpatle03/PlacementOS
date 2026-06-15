@@ -10,6 +10,8 @@ const { connectRedis } = require("./config/redis");
 const { initSocket } = require("./sockets");
 
 const { errorHandler } = require("./middlewares/errorHandler");
+const { auditMiddleware } = require('./middlewares/auditMiddleware');
+
 const healthRouter = require("./routes/health.routes");
 const authRouter = require("./routes/auth.routes");
 const studentRouter = require("./routes/student.routes");
@@ -27,11 +29,14 @@ const notificationRouter = require('./routes/notification.routes');
 const offerRouter = require('./routes/offer.routes');
 const policyRouter = require('./routes/policy.routes');
 const analyticsRouter = require('./routes/analytics.routes');
+const reportRouter = require('./routes/report.routes');
+const adminRouter = require('./routes/admin.routes');
 const { startEmailWorker } = require("./queues/emailWorker");
 const {
   startInterviewReminderWorker,
 } = require("./queues/interviewReminderWorker");
 const { startNotificationWorker } = require("./queues/notificationWorker");
+const { startReportWorker } = require('./queues/reportWorker');
 
 const app = express();
 const server = http.createServer(app); // wrap express in http.Server
@@ -41,6 +46,7 @@ app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(auditMiddleware);
 
 // Routes
 app.use("/api/v1/health", healthRouter);
@@ -60,6 +66,8 @@ app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/offers', offerRouter);
 app.use('/api/v1/policies', policyRouter);
 app.use('/api/v1/analytics', analyticsRouter);
+app.use('/api/v1/reports', reportRouter);
+app.use('/api/v1/admin', adminRouter);
 
 // 404
 app.use((req, res) => {
@@ -81,6 +89,7 @@ if (require.main === module) {
   startEmailWorker();
   startInterviewReminderWorker();
   startNotificationWorker();
+  startReportWorker();
 
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);

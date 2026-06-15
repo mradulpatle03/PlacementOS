@@ -12,6 +12,7 @@ const {
 } = require("../sockets");
 const { notifyApplicationStatus } = require("../queues/notificationQueue");
 const User = require("../models/User");
+const { log } = require("../utils/auditLogger");
 
 // PUT /api/v1/pipeline/:id/move-stage
 const moveStage = async (req, res, next) => {
@@ -45,6 +46,18 @@ const moveStage = async (req, res, next) => {
     }
 
     await application.save();
+
+    await log({
+      req,
+      action: "STATUS_CHANGE",
+      entity: "Pipeline",
+      entityId: application._id,
+      entityTitle: `Application ${application._id}`,
+      changes: {
+        before: { stage: previousStage },
+        after: { stage: newStage },
+      },
+    }).catch(() => {}); // already fail-open but belt-and-suspenders
 
     // broadcast to all clients watching this drive
     emitStageMoved(application.drive.toString(), {
@@ -184,7 +197,7 @@ const bulkMoveStage = async (req, res, next) => {
       const { invalidateCache } = require("../utils/analyticsCache");
       await invalidateCache("analytics:*");
     } catch (_) {}
-    
+
     return res.status(200).json({
       success: true,
       message: `Bulk move complete. Moved: ${moved.length}, Skipped: ${skipped.length}`,
