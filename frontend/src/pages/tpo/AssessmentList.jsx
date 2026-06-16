@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { CardListSkeleton } from "@/components/ui/skeletons";
 
 const STATUS_STYLES = {
   draft: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
@@ -89,9 +90,7 @@ export default function AssessmentList() {
       />
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        </div>
+        <CardListSkeleton count={4} />
       ) : assessments.length === 0 ? (
         <Card>
           <CardContent className="pt-0">

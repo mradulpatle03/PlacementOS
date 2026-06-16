@@ -17,11 +17,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import PageHeader from "@/components/ui/PageHeader";
 import StatusBadge from "@/components/ui/StatusBadge";
-import Spinner from "@/components/ui/Spinner";
 import { recruiterAPI } from "@/api/recruiter.api";
 import { recruiterProfileSchema } from "@/lib/validators/recruiter.schema";
 import { showSuccess, showError } from "@/lib/toast";
 import { useSelector } from "react-redux";
+import { FormSkeleton } from "@/components/ui/skeletons";
 
 export default function RecruiterProfile() {
   const queryClient = useQueryClient();
@@ -65,7 +65,7 @@ export default function RecruiterProfile() {
     onError: (err) => showError(err.response?.data?.message || "Update failed"),
   });
 
-  if (isLoading) return <Spinner className="mt-20" />;
+  if (isLoading) return <FormSkeleton />;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

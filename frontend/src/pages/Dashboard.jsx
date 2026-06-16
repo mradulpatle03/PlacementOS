@@ -30,6 +30,7 @@ import { driveAPI } from "@/api/drive.api";
 import { getMyApplications } from "@/api/application.api";
 import { useStudentAnalytics } from "@/hooks/useAnalytics";
 import { useEffect } from "react";
+import { StatCardsSkeleton } from "@/components/ui/skeletons";
 
 // ─────────────────────────────────────────────────────────────
 // Shared helpers
@@ -181,7 +182,13 @@ function StudentDashboard({ user }) {
     const daysLeft = (deadline - Date.now()) / (1000 * 60 * 60 * 24);
     return daysLeft > 0 && daysLeft <= 7;
   });
-
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <StatCardsSkeleton count={4} />
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* ── profile completeness ──────────────────────────── */}
@@ -461,7 +468,7 @@ function StudentDashboard({ user }) {
 function RecruiterDashboard() {
   const navigate = useNavigate();
   useEffect(() => {
-    navigate('/recruiter/dashboard', { replace: true });
+    navigate("/recruiter/dashboard", { replace: true });
   }, [navigate]);
   return null;
 }

@@ -10,7 +10,7 @@ const { connectRedis } = require("./config/redis");
 const { initSocket } = require("./sockets");
 
 const { errorHandler } = require("./middlewares/errorHandler");
-const { auditMiddleware } = require('./middlewares/auditMiddleware');
+const { auditMiddleware } = require("./middlewares/auditMiddleware");
 
 const healthRouter = require("./routes/health.routes");
 const authRouter = require("./routes/auth.routes");
@@ -25,18 +25,23 @@ const pipelineRouter = require("./routes/pipeline.routes");
 const submissionRouter = require("./routes/submission.routes");
 const assessmentRouter = require("./routes/assessment.routes");
 const interviewRouter = require("./routes/interview.routes");
-const notificationRouter = require('./routes/notification.routes');
-const offerRouter = require('./routes/offer.routes');
-const policyRouter = require('./routes/policy.routes');
-const analyticsRouter = require('./routes/analytics.routes');
-const reportRouter = require('./routes/report.routes');
-const adminRouter = require('./routes/admin.routes');
+const notificationRouter = require("./routes/notification.routes");
+const offerRouter = require("./routes/offer.routes");
+const policyRouter = require("./routes/policy.routes");
+const analyticsRouter = require("./routes/analytics.routes");
+const reportRouter = require("./routes/report.routes");
+const adminRouter = require("./routes/admin.routes");
+const publicRouter = require("./routes/public.routes");
+const successStoryRouter = require("./routes/successStory.routes");
 const { startEmailWorker } = require("./queues/emailWorker");
 const {
   startInterviewReminderWorker,
 } = require("./queues/interviewReminderWorker");
 const { startNotificationWorker } = require("./queues/notificationWorker");
-const { startReportWorker } = require('./queues/reportWorker');
+const { startReportWorker } = require("./queues/reportWorker");
+
+const { getActiveAnnouncements } = require("./controllers/admin.controller");
+const { requireAuth } = require("./middlewares/auth.middleware");
 
 const app = express();
 const server = http.createServer(app); // wrap express in http.Server
@@ -62,12 +67,15 @@ app.use("/api/v1/pipeline", pipelineRouter);
 app.use("/api/v1/submissions", submissionRouter);
 app.use("/api/v1/assessments", assessmentRouter);
 app.use("/api/v1/interviews", interviewRouter);
-app.use('/api/v1/notifications', notificationRouter);
-app.use('/api/v1/offers', offerRouter);
-app.use('/api/v1/policies', policyRouter);
-app.use('/api/v1/analytics', analyticsRouter);
-app.use('/api/v1/reports', reportRouter);
-app.use('/api/v1/admin', adminRouter);
+app.use("/api/v1/notifications", notificationRouter);
+app.use("/api/v1/offers", offerRouter);
+app.use("/api/v1/policies", policyRouter);
+app.use("/api/v1/analytics", analyticsRouter);
+app.use("/api/v1/reports", reportRouter);
+app.use("/api/v1/admin", adminRouter);
+app.get("/api/v1/announcements/active", requireAuth, getActiveAnnouncements);
+app.use('/api/v1/public', publicRouter);
+app.use('/api/v1/admin/success-stories', successStoryRouter);
 
 // 404
 app.use((req, res) => {

@@ -28,6 +28,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { TableSkeleton } from "@/components/ui/skeletons";
 
 // score badge colour
 const scoreBg = (pct) => {
@@ -117,9 +118,7 @@ export default function AssessmentSubmissions() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
+      <TableSkeleton />
     );
   }
 

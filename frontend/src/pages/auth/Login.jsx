@@ -18,6 +18,7 @@ import { loginSchema } from "@/lib/validators/auth.schema";
 import { authAPI } from "@/api/auth.api";
 import { setCredentials } from "@/store/authSlice";
 import { showError } from "@/lib/toast";
+import { SEO } from "@/components/seo/SEO";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function Login() {
 
   return (
     <Card>
+      <SEO title="Login" path="/login" noindex />
       <CardHeader>
         <CardTitle>Welcome back</CardTitle>
         <CardDescription>Sign in to your PlacementOS account</CardDescription>
@@ -68,10 +70,18 @@ export default function Login() {
               id="email"
               type="email"
               placeholder="you@college.edu"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
+              <p
+                id="email-error"
+                role="alert"
+                className="text-xs text-destructive"
+              >
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -89,10 +99,16 @@ export default function Login() {
               id="password"
               type="password"
               placeholder="Your password"
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-xs text-destructive">
+              <p
+                id="password-error"
+                role="alert"
+                className="text-xs text-destructive"
+              >
                 {errors.password.message}
               </p>
             )}

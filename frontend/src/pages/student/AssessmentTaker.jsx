@@ -27,8 +27,27 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ErrorBoundary } from "react-error-boundary";
 
 export default function AssessmentTaker() {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+          <p className="font-semibold">The assessment editor crashed.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Your progress up to the last save is safe. Please refresh to
+            continue.
+          </p>
+        </div>
+      }
+    >
+      <AssessmentTakerInner />
+    </ErrorBoundary>
+  );
+}
+
+function AssessmentTakerInner() {
   const { assessmentId } = useParams();
   const navigate = useNavigate();
 
@@ -76,7 +95,7 @@ export default function AssessmentTaker() {
     enabled: hasBegun && !submitted && !submitting,
     settings: assessment?.settings,
     onAutoSubmit: handleAutoSubmitFromCheat,
-    onViolation:   (count) => setViolationCount(count),
+    onViolation: (count) => setViolationCount(count),
   });
 
   // 3. Answer update

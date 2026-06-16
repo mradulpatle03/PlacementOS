@@ -26,6 +26,7 @@ import {
 import { Loader2, FileText, Building2, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { CardListSkeleton } from "@/components/ui/skeletons";
 
 // status badge config
 const STATUS_CONFIG = {
@@ -130,9 +131,7 @@ const MyApplications = () => {
 
       {/* list */}
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <CardListSkeleton count={5} />
       ) : isError ? (
         <p className="py-16 text-center text-sm text-destructive">
           Failed to load applications.

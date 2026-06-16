@@ -2,6 +2,7 @@ import { useSelector } from 'react-redux';
 import { useInitAuth } from '@/hooks/useInitAuth';
 import AppRouter from '@/routes/AppRouter';
 import Spinner from '@/components/ui/Spinner';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   useInitAuth();
@@ -16,5 +17,9 @@ export default function App() {
     );
   }
 
-  return <AppRouter />;
+  return (
+    <ErrorBoundary>
+      <AppRouter />
+    </ErrorBoundary>
+  );
 }

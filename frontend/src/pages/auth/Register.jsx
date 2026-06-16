@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { registerSchema } from '@/lib/validators/auth.schema';
 import { authAPI } from '@/api/auth.api';
 import { showError, showSuccess } from '@/lib/toast';
+import { SEO } from '@/components/seo/SEO';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export default function Register() {
 
   return (
     <Card>
+      <SEO title="Register" path="/register" noindex />
       <CardHeader>
         <CardTitle>Create an account</CardTitle>
         <CardDescription>Join PlacementOS to get started</CardDescription>

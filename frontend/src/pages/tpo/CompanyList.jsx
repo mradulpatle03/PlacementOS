@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
-import Spinner from "@/components/ui/Spinner";
+import CardListSkeleton from "@/components/ui/skeletons/CardListSkeleton";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import CompanyCard from "@/components/company/CompanyCard";
 import CompanyFormModal from "@/components/company/CompanyFormModal";
@@ -154,7 +154,7 @@ export default function CompanyList() {
       </div>
 
       {/* list */}
-      {isLoading && <Spinner className="mt-10" />}
+      {isLoading && <CardListSkeleton count={5} />}
 
       {!isLoading && companies.length === 0 && (
         <EmptyState

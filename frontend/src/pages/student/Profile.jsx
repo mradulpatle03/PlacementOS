@@ -20,10 +20,10 @@ import SkillsInput from "@/components/ui/SkillsInput";
 import ProfileMeter from "@/components/ui/ProfileMeter";
 import ProjectFormModal from "@/components/ui/ProjectFormModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import Spinner from "@/components/ui/Spinner";
 import { studentAPI } from "@/api/student.api";
 import { profileSchema } from "@/lib/validators/student.schema";
 import { showSuccess, showError } from "@/lib/toast";
+import { FormSkeleton } from "@/components/ui/skeletons";
 
 const BRANCHES = ["CSE", "IT", "ECE", "EEE", "ME", "CE", "Other"];
 
@@ -146,7 +146,7 @@ export default function StudentProfile() {
     }
   };
 
-  if (isLoading) return <Spinner className="mt-20" />;
+  if (isLoading) return <FormSkeleton />;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

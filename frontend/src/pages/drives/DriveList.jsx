@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import PageHeader from '@/components/ui/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
-import Spinner from '@/components/ui/Spinner';
+import { CardListSkeleton } from '@/components/ui/skeletons';
 import DriveCard from '@/components/drive/DriveCard';
 import DriveFilters from '@/components/drive/DriveFilters';
 import { driveAPI } from '@/api/drive.api';
@@ -119,7 +119,7 @@ export default function DriveList() {
           )}
 
           {/* results */}
-          {isLoading && <Spinner className="mt-10" />}
+          {isLoading && <CardListSkeleton count={5} />}
 
           {!isLoading && drives.length === 0 && (
             <EmptyState

@@ -26,6 +26,7 @@ export default function Navbar() {
             variant="ghost"
             size="icon"
             onClick={() => dispatch(toggleTheme())}
+            aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {mode === "dark" ? (
               <Sun className="h-4 w-4" />
@@ -42,7 +43,12 @@ export default function Navbar() {
                 {user?.name}
               </span>
 
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                aria-label="Log out"
+              >
                 <LogOut className="h-4 w-4" />
               </Button>
             </>

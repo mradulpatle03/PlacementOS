@@ -52,10 +52,25 @@ import CompanyAnalytics from "@/pages/tpo/CompanyAnalytics";
 import MyOffers from "@/pages/student/MyOffers";
 import OfferManager from "@/pages/tpo/OfferManager";
 import RecruiterDashboard from "@/pages/recruiter/RecruiterDashboard";
+import Reports from "@/pages/tpo/Reports";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AuditLogs from "@/pages/admin/AuditLogs";
+
+import PublicLayout from "@/components/layout/PublicLayout";
+import Home from "@/pages/public/Home";
+import SuccessStories from "@/pages/public/SuccessStories";
+import About from "@/pages/public/About";
+import Contact from "@/pages/public/Contact";
 
 export default function AppRouter() {
   return (
     <Routes>
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/success-stories" element={<SuccessStories />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+      </Route>
       {/* Public auth routes */}
       <Route element={<AuthLayout />}>
         <Route
@@ -192,6 +207,14 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
+        <Route
+          path="/reports"
+          element={
+            <RoleRoute roles={["tpo", "admin", "coordinator"]}>
+              <Reports />
+            </RoleRoute>
+          }
+        />
         {/* Student only */}
         <Route
           path="/applications"
@@ -314,6 +337,22 @@ export default function AppRouter() {
           element={
             <RoleRoute roles={["tpo", "admin", "coordinator", "recruiter"]}>
               <CompanyAnalytics />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <RoleRoute roles={["admin"]}>
+              <AdminDashboard />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/admin/audit"
+          element={
+            <RoleRoute roles={["admin"]}>
+              <AuditLogs />
             </RoleRoute>
           }
         />

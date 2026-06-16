@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { forgotPasswordSchema } from '@/lib/validators/auth.schema';
 import { authAPI } from '@/api/auth.api';
 import { showError, showSuccess } from '@/lib/toast';
+import { SEO } from '@/components/seo/SEO';
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ export default function ForgotPassword() {
 
   return (
     <Card>
+      <SEO title="Forgot Password" path="/forgot-password" noindex />
       <CardHeader>
         <CardTitle>Forgot password</CardTitle>
         <CardDescription>

@@ -12,7 +12,6 @@ import {
 import { toast } from "sonner";
 import {
   ArrowLeft,
-  Loader2,
   AlertCircle,
   RefreshCw,
   Users,
@@ -39,6 +38,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { TableSkeleton } from "@/components/ui/skeletons";
+import { ErrorBoundary } from "react-error-boundary";
 
 const STAGES = [
   { key: "applied", label: "Applied" },
@@ -53,6 +54,24 @@ const STAGES = [
 ];
 
 export default function PipelineBoard() {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+          <p className="font-semibold">The pipeline crashed.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Your progress up to the last save is safe. Please refresh to
+            continue.
+          </p>
+        </div>
+      }
+    >
+      <PipelineBoardInner />
+    </ErrorBoundary>
+  );
+}
+
+function PipelineBoardInner() {
   const { driveId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -186,12 +205,7 @@ export default function PipelineBoard() {
 
   // states
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-32 gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Loading pipeline…</p>
-      </div>
-    );
+    return <TableSkeleton />;
   }
 
   if (isError || !rawPipeline) {

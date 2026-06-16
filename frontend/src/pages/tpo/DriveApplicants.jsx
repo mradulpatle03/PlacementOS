@@ -30,6 +30,7 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TableSkeleton } from "@/components/ui/skeletons";
 
 // student row
 const StudentRow = ({ student, showReasons = false }) => (
@@ -131,9 +132,7 @@ const DriveApplicants = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-24">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <TableSkeleton />
     );
   }
 

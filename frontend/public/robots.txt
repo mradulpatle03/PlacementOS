@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Allow: /success-stories
+Allow: /about
+Allow: /contact
+
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /tpo
+Disallow: /recruiter
+Disallow: /applications
+Disallow: /offers
+Disallow: /interviews
+Disallow: /notifications
+Disallow: /analytics
+Disallow: /reports
+Disallow: /unauthorized
+
+Sitemap: https://placementos.example.edu/sitemap.xml

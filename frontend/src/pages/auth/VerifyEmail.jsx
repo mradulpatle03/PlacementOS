@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { verifyOTPSchema } from '@/lib/validators/auth.schema';
 import { authAPI } from '@/api/auth.api';
 import { showError, showSuccess } from '@/lib/toast';
+import { SEO } from '@/components/seo/SEO';
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ export default function VerifyEmail() {
 
   return (
     <Card>
+      <SEO title="Verify Email" path="/verify-email" noindex />
       <CardHeader>
         <CardTitle>Verify your email</CardTitle>
         <CardDescription>

@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   ChevronRight,
+  FileBarChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -59,16 +60,19 @@ const navItems = {
     { to: "/analytics", icon: BarChart2, label: "Analytics" },
     { to: "/tpo/policy", icon: Shield, label: "Policy" },
     { to: "/notifications", icon: Bell, label: "Notifications" },
+    { to: "/reports", icon: FileBarChart, label: "Reports" },
   ],
 
   admin: [
     { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { to: "/admin/dashboard", icon: ShieldCheck, label: "Admin Panel" },
     { to: "/admin/users", icon: Users, label: "Users" },
     { to: "/admin/recruiters", icon: ShieldCheck, label: "Recruiters" },
     { to: "/admin/audit", icon: FileText, label: "Audit Logs" },
     { to: "/companies", icon: Building2, label: "Companies" },
     { to: "/drives", icon: Briefcase, label: "Drives" },
     { to: "/analytics", icon: BarChart2, label: "Analytics" },
+    { to: "/reports", icon: FileBarChart, label: "Reports" },
     { to: "/tpo/policy", icon: Shield, label: "Policy" },
     { to: "/notifications", icon: Bell, label: "Notifications" },
   ],

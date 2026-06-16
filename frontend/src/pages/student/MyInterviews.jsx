@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { interviewAPI } from '@/api/interview.api';
 import { getMyApplications } from '@/api/application.api';
+import { CardListSkeleton } from '@/components/ui/skeletons';
 
 // ─────────────────────────────────────────────────────────────
 // Constants
@@ -529,9 +530,7 @@ export default function MyInterviews() {
 
       {/* ── Content ────────────────────────────────────────── */}
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <CardListSkeleton count={5} />
       ) : isError ? (
         <p className="py-16 text-center text-sm text-destructive">
           Failed to load interviews.

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { resetPasswordSchema } from '@/lib/validators/auth.schema';
 import { authAPI } from '@/api/auth.api';
 import { showError, showSuccess } from '@/lib/toast';
+import { SEO } from '@/components/seo/SEO';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ export default function ResetPassword() {
 
   return (
     <Card>
+      <SEO title="Reset Password" path="/reset-password" noindex />
       <CardHeader>
         <CardTitle>Reset password</CardTitle>
         <CardDescription>
