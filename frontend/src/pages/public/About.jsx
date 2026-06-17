@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import StatsCounter from "@/components/public/StatsCounter";
 import { publicAPI } from "@/api/public.api";
-import SEO from "@/components/seo/SEO";
+import { SEO } from "@/components/seo/SEO";
 
 const VALUES = [
   {

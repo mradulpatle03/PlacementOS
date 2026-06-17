@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import StatsCounter from "@/components/public/StatsCounter";
 import { publicAPI } from "@/api/public.api";
 import { cn } from "@/lib/utils";
-import SEO from "@/components/seo/SEO";
+import { SEO } from "@/components/seo/SEO";
 
 // ── hero section ─────────────────────────────────────────────
 function Hero({ stats, loading }) {

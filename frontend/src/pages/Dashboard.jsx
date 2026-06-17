@@ -182,7 +182,7 @@ function StudentDashboard({ user }) {
     const daysLeft = (deadline - Date.now()) / (1000 * 60 * 60 * 24);
     return daysLeft > 0 && daysLeft <= 7;
   });
-  if (isLoading) {
+  if (drivesLoading || appsLoading || analyticsLoading) {
     return (
       <div className="space-y-6">
         <StatCardsSkeleton count={4} />

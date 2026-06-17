@@ -10,13 +10,13 @@ const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
  * Renders page-specific <title>, meta description, canonical link,
  * and OG/Twitter overrides. Falls back to site defaults when omitted.
  */
-export default function SEO({
+export const SEO=({
   title,
   description,
   path = '',
   image = DEFAULT_IMAGE,
   noindex = false,
-}) {
+}) =>{
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Campus Placement Management Platform`;
   const url = `${SITE_URL}${path}`;
 

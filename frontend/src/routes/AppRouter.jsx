@@ -44,8 +44,6 @@ import MyInterviews from "@/pages/student/MyInterviews";
 import Notifications from "@/pages/Notifications";
 import NotificationPreferences from "@/pages/NotificationPreferences";
 import Analytics from "@/pages/tpo/Analytics";
-
-import Analytics from "@/pages/tpo/Analytics";
 import BranchAnalytics from "@/pages/tpo/BranchAnalytics";
 import CompanyAnalytics from "@/pages/tpo/CompanyAnalytics";
 

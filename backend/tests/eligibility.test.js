@@ -224,3 +224,53 @@ describe('checkEligibility — warnings (soft checks)', () => {
     expect(result.warnings.some((w) => w.includes('Roll number'))).toBe(true);
   });
 });
+
+describe('checkEligibility — gender restriction', () => {
+  test('blocks student whose gender does not match restriction', () => {
+    const result = checkEligibility(
+      makeStudent({ gender: 'male' }),
+      makeDrive({ eligibility: { ...makeDrive().eligibility, genderRestriction: 'female' } })
+    );
+    expect(result.eligible).toBe(false);
+    expect(result.reasons[0]).toMatch(/open to female candidates only/);
+  });
+
+  test('allows student whose gender matches restriction', () => {
+    const result = checkEligibility(
+      makeStudent({ gender: 'female' }),
+      makeDrive({ eligibility: { ...makeDrive().eligibility, genderRestriction: 'female' } })
+    );
+    expect(result.eligible).toBe(true);
+  });
+
+  test('allows any gender when restriction is "any"', () => {
+    const result = checkEligibility(
+      makeStudent({ gender: 'male' }),
+      makeDrive({ eligibility: { ...makeDrive().eligibility, genderRestriction: 'any' } })
+    );
+    expect(result.eligible).toBe(true);
+  });
+
+  test('skips gender check entirely when student.gender is not provided', () => {
+    const result = checkEligibility(
+      makeStudent({ gender: undefined }),
+      makeDrive({ eligibility: { ...makeDrive().eligibility, genderRestriction: 'female' } })
+    );
+    // gender restriction only applies if student.gender is present
+    expect(result.reasons.some((r) => r.includes('candidates only'))).toBe(false);
+  });
+});
+
+describe('checkEligibility — one-offer policy edge case: dreamPackageLPA = 0', () => {
+  test('blocks placed student even for a high-CTC drive when dream threshold is 0 (disabled)', () => {
+    const result = checkEligibility(
+      makeStudent({ placementStatus: 'placed' }),
+      makeDrive({
+        roles: [{ ctc: 100 }], // very high CTC
+        settings: { oneOfferPolicy: true, dreamPackageLPA: 0 }, // dream exemption disabled
+      })
+    );
+    expect(result.eligible).toBe(false);
+    expect(result.reasons[0]).toMatch(/already placed/);
+  });
+});

@@ -3,7 +3,7 @@ import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import SEO from "@/components/seo/SEO";
+import { SEO } from "@/components/seo/SEO";
 
 const CONTACT_INFO = [
   {

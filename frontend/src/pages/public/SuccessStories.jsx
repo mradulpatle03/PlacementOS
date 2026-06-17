@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import { publicAPI } from "@/api/public.api";
 import { cn } from "@/lib/utils";
-import SEO from "@/components/seo/SEO";
+import { SEO } from "@/components/seo/SEO";
 
 const BRANCHES = ["CSE", "IT", "ECE", "EEE", "ME", "CE", "Other"];
 

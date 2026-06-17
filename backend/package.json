@@ -11,6 +11,7 @@
     "seed:admin": "node src/seeders/admin.seeder.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watch --runInBand",
+    "test:coverage": "jest --runInBand --coverage",
     "seed:sample": "node src/seeders/sampleData.seeder.js"
   },
   "jest": {
@@ -19,7 +20,18 @@
       "**/tests/**/*.test.js"
     ],
     "testTimeout": 30000,
-    "forceExit": true
+    "forceExit": true,
+    "collectCoverageFrom": [
+      "src/services/**/*.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 60,
+        "branches": 55,
+        "functions": 60,
+        "lines": 60
+      }
+    }
   },
   "dependencies": {
     "axios": "^1.16.1",

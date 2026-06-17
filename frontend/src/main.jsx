@@ -8,9 +8,9 @@ import { store } from "./store/store";
 import { queryClient } from "./lib/queryClient";
 import App from "./App";
 import "./index.css";
-import "@fullcalendar/core/main.css";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -18,10 +18,12 @@ createRoot(document.getElementById("root")).render(
       <HelmetProvider>
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
-              <App />
-              <Toaster richColors position="top-right" />
-            </BrowserRouter>
+            <TooltipProvider>
+              <BrowserRouter>
+                <App />
+                <Toaster richColors position="top-right" />
+              </BrowserRouter>
+            </TooltipProvider>
           </QueryClientProvider>
         </Provider>
       </HelmetProvider>

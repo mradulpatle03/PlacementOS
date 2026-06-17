@@ -155,6 +155,20 @@ export default function DriveDetail() {
                 Interviews
               </Button>
             )}
+            {isTPO && (
+              <Link
+                to={`/tpo/drives/${drive._id}/offers`}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  location.pathname.includes("/offers")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                )}
+              >
+                <FileText className="w-4 h-4" />
+                Offers
+              </Link>
+            )}
           </div>
         </div>
 

@@ -27,6 +27,7 @@ import { Loader2, FileText, Building2, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CardListSkeleton } from "@/components/ui/skeletons";
+import { Link } from 'react-router-dom';
 
 // status badge config
 const STATUS_CONFIG = {
@@ -175,6 +176,15 @@ const MyApplications = () => {
                       >
                         {status.label}
                       </span>
+                      {app.status === "offered" && (
+                        <Link
+                          to="/offers"
+                          className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+                        >
+                          <FileText className="w-3 h-3" />
+                          View offer letter →
+                        </Link>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">

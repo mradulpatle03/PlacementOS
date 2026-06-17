@@ -73,7 +73,6 @@ const offerSchema = new mongoose.Schema(
 // indexes
 offerSchema.index({ drive: 1 });
 offerSchema.index({ student: 1 });
-offerSchema.index({ application: 1 }, { unique: true });
 offerSchema.index({ status: 1 });
 
 module.exports = mongoose.model("Offer", offerSchema);
