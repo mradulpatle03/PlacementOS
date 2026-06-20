@@ -142,9 +142,7 @@ export default function AppRouter() {
           path="/analytics"
           element={
             <RoleRoute roles={["tpo", "coordinator", "admin"]}>
-              <div className="p-4 text-muted-foreground">
-                Analytics — Day 76
-              </div>
+              <Analytics />
             </RoleRoute>
           }
         />
@@ -233,6 +231,7 @@ export default function AppRouter() {
         />
         {/* Shared routes */}
         <Route path="/drives" element={<DriveList />} />
+        <Route path="/drives/:id" element={<DriveDetail />} />
         <Route
           path="/profile"
           element={
@@ -370,7 +369,6 @@ export default function AppRouter() {
       {/* Misc */}
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="*" element={<NotFound />} />
-      <Route path="/drives/:id" element={<DriveDetail />} />
     </Routes>
   );
 }

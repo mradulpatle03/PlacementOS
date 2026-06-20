@@ -1,4 +1,4 @@
-const axios = require('axios');
+const axios = require("axios");
 const Resume = require("../models/Resume");
 const Student = require("../models/Student");
 const { createError } = require("../middlewares/errorHandler");
@@ -40,7 +40,8 @@ const uploadResume = async (req, res, next) => {
       folder: `placementos/resumes/${req.user._id}`,
       resource_type: "raw", // PDF is a raw resource in cloudinary
       public_id: `resume_${Date.now()}`,
-      format: "pdf",
+      // format: "pdf",
+      type: "upload",
     });
 
     console.log(`Resume uploaded to Cloudinary: ${result.public_id}`);
@@ -84,6 +85,11 @@ const uploadResume = async (req, res, next) => {
 
     res.status(201).json({ success: true, resume });
   } catch (err) {
+    console.log("Resume upload failed:", {
+      message: err.message,
+      http_code: err.http_code,
+      name: err.name,
+    });
     next(err);
   }
 };
@@ -186,8 +192,11 @@ const getStudentResumes = async (req, res, next) => {
 // get score for a specific resume (re-computes if needed)
 const getResumeScore = async (req, res, next) => {
   try {
-    const resume = await Resume.findOne({ _id: req.params.id, user: req.user._id });
-    if (!resume) return next(createError('Resume not found', 404));
+    const resume = await Resume.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+    if (!resume) return next(createError("Resume not found", 404));
 
     // if score already computed return it
     if (resume.score !== undefined) {
@@ -226,25 +235,59 @@ const getResumeScore = async (req, res, next) => {
 
 // GET /api/v1/resumes/:id/preview
 // streams the PDF back to client for in-browser preview
+// const previewResume = async (req, res, next) => {
+//   try {
+//     // allow student to preview own, TPO/recruiter to preview any
+//     let resume;
+//     if (req.user.role === 'student') {
+//       resume = await Resume.findOne({ _id: req.params.id, user: req.user._id });
+//     } else {
+//       resume = await Resume.findById(req.params.id);
+//     }
+
+//     if (!resume) return next(createError('Resume not found', 404));
+
+//     // fetch PDF from cloudinary and pipe it to client
+//     const response = await axios.get(resume.cloudinaryUrl, { responseType: 'stream' });
+
+//     res.setHeader('Content-Type', 'application/pdf');
+//     res.setHeader('Content-Disposition', `inline; filename="${resume.label}.pdf"`);
+//     response.data.pipe(res);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
 const previewResume = async (req, res, next) => {
   try {
-    // allow student to preview own, TPO/recruiter to preview any
+    console.log("PREVIEW START");
+
     let resume;
-    if (req.user.role === 'student') {
-      resume = await Resume.findOne({ _id: req.params.id, user: req.user._id });
+
+    if (req.user.role === "student") {
+      resume = await Resume.findOne({
+        _id: req.params.id,
+        user: req.user._id,
+      });
     } else {
       resume = await Resume.findById(req.params.id);
     }
 
-    if (!resume) return next(createError('Resume not found', 404));
+    console.log("RESUME FOUND:", !!resume);
+    console.log("URL:", resume?.cloudinaryUrl);
 
-    // fetch PDF from cloudinary and pipe it to client
-    const response = await axios.get(resume.cloudinaryUrl, { responseType: 'stream' });
+    const response = await axios.get(resume.cloudinaryUrl, {
+      responseType: "stream",
+    });
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="${resume.label}.pdf"`);
+    console.log("CLOUDINARY FETCH OK");
+
+    res.setHeader("Content-Type", "application/pdf");
     response.data.pipe(res);
   } catch (err) {
+    console.log("PREVIEW ERROR:", err.message);
+    console.log("STATUS:", err.response?.status);
+
     next(err);
   }
 };

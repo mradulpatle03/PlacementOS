@@ -30,35 +30,107 @@ import { CardListSkeleton } from "@/components/ui/skeletons";
 import { Link } from 'react-router-dom';
 
 // status badge config
+// const STATUS_CONFIG = {
+//   applied: {
+//     label: "Applied",
+//     class: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+//   },
+//   shortlisted: {
+//     label: "Shortlisted",
+//     class:
+//       "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+//   },
+//   oa: {
+//     label: "OA",
+//     class:
+//       "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
+//   },
+//   interview: {
+//     label: "Interview",
+//     class:
+//       "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+//   },
+//   selected: {
+//     label: "Selected 🎉",
+//     class:
+//       "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+//   },
+//   rejected: {
+//     label: "Rejected",
+//     class: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+//   },
+//   withdrawn: {
+//     label: "Withdrawn",
+//     class: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+//   },
+// };
 const STATUS_CONFIG = {
   applied: {
     label: "Applied",
     class: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   },
+
   shortlisted: {
     label: "Shortlisted",
     class:
       "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
   },
+
   oa: {
-    label: "OA",
+    label: "Online Assessment",
     class:
       "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
   },
+
+  interview_1: {
+    label: "Interview 1",
+    class:
+      "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+  },
+
+  interview_2: {
+    label: "Interview 2",
+    class:
+      "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+  },
+
+  hr: {
+    label: "HR Round",
+    class:
+      "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300",
+  },
+
+  offered: {
+    label: "Offered",
+    class:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+  },
+
+  accepted: {
+    label: "Accepted 🎉",
+    class:
+      "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  },
+
+  // Legacy aliases
   interview: {
     label: "Interview",
     class:
       "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
   },
+
   selected: {
     label: "Selected 🎉",
     class:
       "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
   },
+
+  // Exit statuses
   rejected: {
     label: "Rejected",
     class: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
   },
+
   withdrawn: {
     label: "Withdrawn",
     class: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",

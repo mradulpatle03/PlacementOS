@@ -18,7 +18,7 @@ export default function DriveCard({ drive, actions }) {
     drive.roles?.reduce((s, r) => s + (r.openings || 1), 0) || 0;
 
   const { user } = useSelector((state) => state.auth);
-  const isStudent = isAuthenticated && user?.role === 'student';
+  const isStudent = user?.role === 'student';
 
   return (
     <Card className="hover:shadow-md transition-shadow">

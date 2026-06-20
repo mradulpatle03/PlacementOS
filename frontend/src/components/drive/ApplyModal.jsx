@@ -25,7 +25,8 @@ const ApplyModal = ({ open, onClose, drive }) => {
     queryKey: ['my-resumes'],
     queryFn: async () => {
       const { data } = await api.get('/resumes');
-      return data.data;
+      console.log(data);
+      return data;
     },
     enabled: open,
   });

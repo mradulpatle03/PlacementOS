@@ -31,6 +31,7 @@ import { getDriveCTCRange, getDeadlineStatus } from "@/lib/driveUtils";
 import ApplyModal from "../../components/drive/ApplyModal";
 import { EligibilityBadge } from "../../components/drive/EligibilityBadge";
 import { Kanban } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function DriveDetail() {
   const { id } = useParams();
@@ -93,7 +94,7 @@ export default function DriveDetail() {
                 <img
                   src={drive.company.logo.cloudinaryUrl}
                   alt={drive.company.name}
-                  className="h-5 w-5 object-contain"
+                  className="h-8 w-8 rounded-full object-cover"
                 />
               ) : null}
               <p className="text-muted-foreground">{drive.company?.name}</p>

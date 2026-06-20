@@ -13,6 +13,7 @@ const {
 const { notifyApplicationStatus } = require("../queues/notificationQueue");
 const User = require("../models/User");
 const { log } = require("../utils/auditLogger");
+const Drive = require("../models/Drive");
 
 // PUT /api/v1/pipeline/:id/move-stage
 const moveStage = async (req, res, next) => {
@@ -31,6 +32,67 @@ const moveStage = async (req, res, next) => {
     );
     if (!valid) return next(new AppError(error, 400));
 
+    // const previousStage = application.status;
+
+    // application.stageHistory.push({
+    //   stage: targetStage,
+    //   movedBy: req.user._id,
+    //   movedAt: new Date(),
+    //   note: note.trim(),
+    // });
+    // application.status = targetStage;
+    // if (targetStage === "rejected") {
+    //   application.stageAtExit = previousStage;
+    //   if (note.trim()) application.remarks = note.trim();
+    // }
+
+    // await application.save();
+
+    // await log({
+    //   req,
+    //   action: "STATUS_CHANGE",
+    //   entity: "Pipeline",
+    //   entityId: application._id,
+    //   entityTitle: `Application ${application._id}`,
+    //   changes: {
+    //     before: { stage: previousStage },
+    //     after: { stage: newStage },
+    //   },
+    // }).catch(() => {}); // already fail-open but belt-and-suspenders
+
+    // // broadcast to all clients watching this drive
+    // emitStageMoved(application.drive.toString(), {
+    //   applicationId: application._id,
+    //   previousStage,
+    //   currentStage: targetStage,
+    //   movedBy: { _id: req.user._id, name: req.user.name },
+    //   note: note.trim(),
+    // });
+    // // notify the student
+    // try {
+    //   const studentUser = await User.findById(application.student)
+    //     .select("email name")
+    //     .lean();
+    //   if (studentUser) {
+    //     await notifyApplicationStatus(
+    //       studentUser._id.toString(),
+    //       studentUser.email,
+    //       {
+    //         studentName: studentUser.name,
+    //         drive: { _id: application.drive, title: drive?.title || "" },
+    //         company: { name: drive?.company?.name || "Company" },
+    //         newStage: newStage,
+    //         stageLabel: newStage.replace(/_/g, " "),
+    //         note: notes || "",
+    //       },
+    //     );
+    //   }
+    // } catch (notifErr) {
+    //   console.log(
+    //     "[Pipeline] Notification failed (non-fatal):",
+    //     notifErr.message,
+    //   );
+    // }
     const previousStage = application.status;
 
     application.stageHistory.push({
@@ -55,11 +117,10 @@ const moveStage = async (req, res, next) => {
       entityTitle: `Application ${application._id}`,
       changes: {
         before: { stage: previousStage },
-        after: { stage: newStage },
+        after: { stage: targetStage }, // fixed
       },
-    }).catch(() => {}); // already fail-open but belt-and-suspenders
+    }).catch(() => {});
 
-    // broadcast to all clients watching this drive
     emitStageMoved(application.drive.toString(), {
       applicationId: application._id,
       previousStage,
@@ -67,22 +128,28 @@ const moveStage = async (req, res, next) => {
       movedBy: { _id: req.user._id, name: req.user.name },
       note: note.trim(),
     });
-    // notify the student
+
     try {
       const studentUser = await User.findById(application.student)
         .select("email name")
         .lean();
+
+      const driveDoc = await Drive.findById(application.drive)
+        .select("title company")
+        .populate("company", "name")
+        .lean();
+
       if (studentUser) {
         await notifyApplicationStatus(
           studentUser._id.toString(),
           studentUser.email,
           {
             studentName: studentUser.name,
-            drive: { _id: application.drive, title: drive?.title || "" },
-            company: { name: drive?.company?.name || "Company" },
-            newStage: newStage,
-            stageLabel: newStage.replace(/_/g, " "),
-            note: notes || "",
+            drive: { _id: application.drive, title: driveDoc?.title || "" },
+            company: { name: driveDoc?.company?.name || "Company" },
+            newStage: targetStage,
+            stageLabel: targetStage.replace(/_/g, " "),
+            note: note.trim() || "",
           },
         );
       }

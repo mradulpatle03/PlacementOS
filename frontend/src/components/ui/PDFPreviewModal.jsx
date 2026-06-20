@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
-import { ChevronLeft, ChevronRight, Loader2, ExternalLink } from 'lucide-react';
-import Modal from '@/components/ui/Modal';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import { ChevronLeft, ChevronRight, Loader2, ExternalLink } from "lucide-react";
+import Modal from "@/components/ui/Modal";
+import { Button } from "@/components/ui/button";
+import api from "@/lib/axios";
 
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
-// required worker setup for react-pdf v7+
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function PDFPreviewModal({ open, onClose, previewUrl, title }) {
@@ -15,6 +15,36 @@ export default function PDFPreviewModal({ open, onClose, previewUrl, title }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // blob URL fetched THROUGH the authenticated axios instance,
+  // since react-pdf's own internal fetch never carries our JWT header
+  const [blobUrl, setBlobUrl] = useState(null);
+
+  useEffect(() => {
+    if (!open || !previewUrl) return;
+
+    let objectUrl = null;
+    setLoading(true);
+    setError(false);
+    setBlobUrl(null);
+
+    api
+      .get(previewUrl, { responseType: "blob" })
+      .then((res) => {
+        objectUrl = URL.createObjectURL(res.data);
+        setBlobUrl(objectUrl);
+      })
+      .catch(() => {
+        setLoading(false);
+        setError(true);
+      });
+
+    // revoke the blob URL when the modal closes or previewUrl changes,
+    // otherwise these leak memory every time a resume is previewed
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [open, previewUrl]);
 
   const handleLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
@@ -33,6 +63,7 @@ export default function PDFPreviewModal({ open, onClose, previewUrl, title }) {
     setNumPages(null);
     setLoading(true);
     setError(false);
+    setBlobUrl(null);
     onClose();
   };
 
@@ -40,14 +71,16 @@ export default function PDFPreviewModal({ open, onClose, previewUrl, title }) {
     <Modal
       open={open}
       onClose={handleClose}
-      title={title || 'Resume Preview'}
+      title={title || "Resume Preview"}
+      description="PDF preview of the selected resume"
       className="max-w-2xl w-full"
     >
       <div className="mt-2 space-y-3">
-        {/* open in new tab */}
         <div className="flex justify-end">
-          <Button variant="ghost" size="sm" asChild>
-            <a href={previewUrl} target="_blank" rel="noreferrer">
+          {/* "open in new tab" still needs a directly-fetchable URL — disabled until blob is ready,
+              since previewUrl alone (no auth) would just 401 again in a new tab */}
+          <Button variant="ghost" size="sm" asChild disabled={!blobUrl}>
+            <a href={blobUrl || "#"} target="_blank" rel="noreferrer">
               <ExternalLink className="h-4 w-4 mr-1" />
               Open in new tab
             </a>
@@ -64,16 +97,11 @@ export default function PDFPreviewModal({ open, onClose, previewUrl, title }) {
           {error && (
             <div className="text-center text-muted-foreground py-10">
               <p>Could not load PDF preview.</p>
-              <Button variant="link" asChild className="mt-2">
-                <a href={previewUrl} target="_blank" rel="noreferrer">
-                  Open directly instead
-                </a>
-              </Button>
             </div>
           )}
-          {!error && (
+          {!error && blobUrl && (
             <Document
-              file={previewUrl}
+              file={blobUrl}
               onLoadSuccess={handleLoadSuccess}
               onLoadError={handleLoadError}
               loading=""
@@ -88,7 +116,6 @@ export default function PDFPreviewModal({ open, onClose, previewUrl, title }) {
           )}
         </div>
 
-        {/* page controls */}
         {numPages && numPages > 1 && (
           <div className="flex items-center justify-center gap-3">
             <Button

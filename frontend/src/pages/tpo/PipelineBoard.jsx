@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -18,6 +18,7 @@ import {
   Download,
   FileSpreadsheet,
   FileText,
+  Calendar,
 } from "lucide-react";
 
 import { pipelineAPI } from "@/api/pipeline.api";
@@ -107,12 +108,28 @@ function PipelineBoardInner() {
   ].filter(Boolean).length;
 
   // fetch
-  const { isLoading, isError, refetch } = useQuery({
+  // const { isLoading, isError, refetch } = useQuery({
+  //   queryKey: ["pipeline", driveId],
+  //   queryFn: () => pipelineAPI.getByDrive(driveId).then((r) => r.data.data),
+  //   enabled: !!driveId,
+  //   onSuccess: (data) => setRawPipeline(data.pipeline),
+  // });
+  const {
+    data: pipelineResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["pipeline", driveId],
     queryFn: () => pipelineAPI.getByDrive(driveId).then((r) => r.data.data),
     enabled: !!driveId,
-    onSuccess: (data) => setRawPipeline(data.pipeline),
   });
+
+  useEffect(() => {
+    if (pipelineResponse?.pipeline) {
+      setRawPipeline(pipelineResponse.pipeline);
+    }
+  }, [pipelineResponse]);
 
   usePipelineSocket(driveId);
 
@@ -148,8 +165,17 @@ function PipelineBoardInner() {
     [rawPipeline],
   );
 
+  // const handleDragStart = ({ active }) => {
+  //   const stage = findStageOfApp(active.id);
+  //   if (!stage) return;
+  //   setActiveApp(rawPipeline[stage]?.find((a) => a._id === active.id) || null);
+  // };
+
+  const dragOriginStageRef = useRef(null);
+
   const handleDragStart = ({ active }) => {
     const stage = findStageOfApp(active.id);
+    dragOriginStageRef.current = stage; // remember where it started
     if (!stage) return;
     setActiveApp(rawPipeline[stage]?.find((a) => a._id === active.id) || null);
   };
@@ -172,16 +198,29 @@ function PipelineBoardInner() {
     });
   };
 
+  // const handleDragEnd = ({ active, over }) => {
+  //   setActiveApp(null);
+  //   if (!over || !rawPipeline) return;
+  //   const src = findStageOfApp(active.id);
+  //   const tgt =
+  //     rawPipeline[over.id] !== undefined ? over.id : findStageOfApp(over.id);
+  //   if (!src || !tgt || src === tgt) return;
+  //   moveStage({ applicationId: active.id, targetStage: tgt });
+  // };
   const handleDragEnd = ({ active, over }) => {
     setActiveApp(null);
-    if (!over || !rawPipeline) return;
-    const src = findStageOfApp(active.id);
+    const originStage = dragOriginStageRef.current;
+    dragOriginStageRef.current = null;
+
+    if (!over || !rawPipeline || !originStage) return;
+
     const tgt =
       rawPipeline[over.id] !== undefined ? over.id : findStageOfApp(over.id);
-    if (!src || !tgt || src === tgt) return;
+
+    if (!tgt || originStage === tgt) return; // no real stage change
+
     moveStage({ applicationId: active.id, targetStage: tgt });
   };
-
   // bulk select
   const handleSelect = useCallback((appId) => {
     setSelectedIds((prev) => {
@@ -196,9 +235,34 @@ function PipelineBoardInner() {
   // export
   // format: 'xlsx' | 'csv'
   const handleExport = useCallback(
-    (stage, format = "xlsx") => {
-      const url = pipelineAPI.exportStageUrl(driveId, stage || null, format);
-      window.open(url, "_blank");
+    async (stage, format = "xlsx") => {
+      try {
+        const res = await pipelineAPI.downloadStage(
+          driveId,
+          stage || null,
+          format,
+        );
+        const blob = new Blob([res.data], {
+          type: res.headers["content-type"] || "application/octet-stream",
+        });
+        // try to parse filename from content-disposition
+        let filename = `pipeline${stage ? `-${stage}` : ""}.${format === "csv" ? "csv" : "xlsx"}`;
+        const cd = res.headers["content-disposition"];
+        if (cd) {
+          const m = cd.match(/filename\*?=(?:UTF-8''|\")?([^;\"]+)/i);
+          if (m && m[1]) filename = decodeURIComponent(m[1].replace(/\"/g, ""));
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || "Export failed");
+      }
     },
     [driveId],
   );

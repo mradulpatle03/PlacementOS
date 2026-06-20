@@ -40,7 +40,7 @@ export default function CompanyList() {
   const canManage = ["tpo", "admin"].includes(user?.role);
 
   const [search, setSearch] = useState("");
-  const [sector, setSector] = useState("");
+  const [sector, setSector] = useState("all");
   const [formModal, setFormModal] = useState({ open: false, company: null });
   const [deleteConfirm, setDeleteConfirm] = useState({
     open: false,
@@ -52,7 +52,7 @@ export default function CompanyList() {
     queryFn: async () => {
       const res = await companyAPI.getAll({
         search,
-        sector: sector || undefined,
+        sector: sector === "all" ? undefined : sector,
       });
       return res.data;
     },
@@ -132,7 +132,7 @@ export default function CompanyList() {
             <SelectValue placeholder="All sectors" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All sectors</SelectItem>
+            <SelectItem value="all">All sectors</SelectItem>
             {SECTORS.map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
@@ -145,7 +145,7 @@ export default function CompanyList() {
             variant="ghost"
             onClick={() => {
               setSearch("");
-              setSector("");
+              setSector("all");
             }}
           >
             Clear

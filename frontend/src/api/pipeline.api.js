@@ -32,4 +32,11 @@ export const pipelineAPI = {
     if (stage) params.set("stage", stage);
     return `/api/v1/pipeline/drive/${driveId}/export?${params.toString()}`;
   },
+
+  // download export via XHR (includes Authorization header) and returns the axios response
+  downloadStage: (driveId, stage, format = "xlsx") =>
+    api.get(`/pipeline/drive/${driveId}/export`, {
+      params: { format, stage },
+      responseType: "blob",
+    }),
 };
