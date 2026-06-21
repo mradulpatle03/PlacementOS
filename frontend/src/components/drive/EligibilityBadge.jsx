@@ -125,7 +125,7 @@ const WhyNotEligibleModal = ({ open, onClose, data }) => {
               size="sm"
               onClick={() => {
                 onClose();
-                window.location.href = "/student/profile";
+                window.location.href = "/profile";
               }}
             >
               Go to Profile

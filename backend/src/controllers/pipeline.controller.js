@@ -32,67 +32,6 @@ const moveStage = async (req, res, next) => {
     );
     if (!valid) return next(new AppError(error, 400));
 
-    // const previousStage = application.status;
-
-    // application.stageHistory.push({
-    //   stage: targetStage,
-    //   movedBy: req.user._id,
-    //   movedAt: new Date(),
-    //   note: note.trim(),
-    // });
-    // application.status = targetStage;
-    // if (targetStage === "rejected") {
-    //   application.stageAtExit = previousStage;
-    //   if (note.trim()) application.remarks = note.trim();
-    // }
-
-    // await application.save();
-
-    // await log({
-    //   req,
-    //   action: "STATUS_CHANGE",
-    //   entity: "Pipeline",
-    //   entityId: application._id,
-    //   entityTitle: `Application ${application._id}`,
-    //   changes: {
-    //     before: { stage: previousStage },
-    //     after: { stage: newStage },
-    //   },
-    // }).catch(() => {}); // already fail-open but belt-and-suspenders
-
-    // // broadcast to all clients watching this drive
-    // emitStageMoved(application.drive.toString(), {
-    //   applicationId: application._id,
-    //   previousStage,
-    //   currentStage: targetStage,
-    //   movedBy: { _id: req.user._id, name: req.user.name },
-    //   note: note.trim(),
-    // });
-    // // notify the student
-    // try {
-    //   const studentUser = await User.findById(application.student)
-    //     .select("email name")
-    //     .lean();
-    //   if (studentUser) {
-    //     await notifyApplicationStatus(
-    //       studentUser._id.toString(),
-    //       studentUser.email,
-    //       {
-    //         studentName: studentUser.name,
-    //         drive: { _id: application.drive, title: drive?.title || "" },
-    //         company: { name: drive?.company?.name || "Company" },
-    //         newStage: newStage,
-    //         stageLabel: newStage.replace(/_/g, " "),
-    //         note: notes || "",
-    //       },
-    //     );
-    //   }
-    // } catch (notifErr) {
-    //   console.log(
-    //     "[Pipeline] Notification failed (non-fatal):",
-    //     notifErr.message,
-    //   );
-    // }
     const previousStage = application.status;
 
     application.stageHistory.push({
@@ -117,10 +56,11 @@ const moveStage = async (req, res, next) => {
       entityTitle: `Application ${application._id}`,
       changes: {
         before: { stage: previousStage },
-        after: { stage: targetStage }, // fixed
+        after: { stage: targetStage },
       },
-    }).catch(() => {});
+    }).catch(() => {}); // already fail-open but belt-and-suspenders
 
+    // broadcast to all clients watching this drive
     emitStageMoved(application.drive.toString(), {
       applicationId: application._id,
       previousStage,
@@ -129,27 +69,29 @@ const moveStage = async (req, res, next) => {
       note: note.trim(),
     });
 
+    // notify the student
     try {
-      const studentUser = await User.findById(application.student)
-        .select("email name")
-        .lean();
+      const Student = require("../models/Student");
+      const Drive = require("../models/Drive");
 
-      const driveDoc = await Drive.findById(application.drive)
-        .select("title company")
-        .populate("company", "name")
-        .lean();
+      const [studentDoc, drive] = await Promise.all([
+        Student.findById(application.student)
+          .populate("user", "email name")
+          .lean(),
+        Drive.findById(application.drive).populate("company", "name").lean(),
+      ]);
 
-      if (studentUser) {
+      if (studentDoc?.user) {
         await notifyApplicationStatus(
-          studentUser._id.toString(),
-          studentUser.email,
+          studentDoc.user._id.toString(),
+          studentDoc.user.email,
           {
-            studentName: studentUser.name,
-            drive: { _id: application.drive, title: driveDoc?.title || "" },
-            company: { name: driveDoc?.company?.name || "Company" },
+            studentName: studentDoc.user.name,
+            drive: { _id: application.drive, title: drive?.title || "" },
+            company: { name: drive?.company?.name || "Company" },
             newStage: targetStage,
-            stageLabel: targetStage.replace(/_/g, " "),
-            note: note.trim() || "",
+            stageLabel: STAGE_LABELS[targetStage] || targetStage,
+            note: note.trim(),
           },
         );
       }
@@ -258,6 +200,55 @@ const bulkMoveStage = async (req, res, next) => {
         targetStageLabel: STAGE_LABELS[targetStage] || targetStage,
         movedBy: { _id: req.user._id, name: req.user.name },
       });
+    }
+
+    // ── notify each moved student (non-fatal, batched, doesn't block response) ──
+    if (toSave.length > 0) {
+      (async () => {
+        try {
+          const Student = require("../models/Student");
+          const Drive = require("../models/Drive");
+
+          const driveId = toSave[0].drive;
+          const studentIds = toSave.map((app) => app.student);
+
+          const [students, drive] = await Promise.all([
+            Student.find({ _id: { $in: studentIds } })
+              .populate("user", "email name")
+              .lean(),
+            Drive.findById(driveId).populate("company", "name").lean(),
+          ]);
+
+          const studentMap = students.reduce((acc, s) => {
+            acc[s._id.toString()] = s;
+            return acc;
+          }, {});
+
+          await Promise.allSettled(
+            toSave.map((app) => {
+              const studentDoc = studentMap[app.student.toString()];
+              if (!studentDoc?.user) return Promise.resolve();
+              return notifyApplicationStatus(
+                studentDoc.user._id.toString(),
+                studentDoc.user.email,
+                {
+                  studentName: studentDoc.user.name,
+                  drive: { _id: driveId, title: drive?.title || "" },
+                  company: { name: drive?.company?.name || "Company" },
+                  newStage: targetStage,
+                  stageLabel: STAGE_LABELS[targetStage] || targetStage,
+                  note: note.trim(),
+                },
+              );
+            }),
+          );
+        } catch (notifErr) {
+          console.log(
+            "[Pipeline] Bulk notification failed (non-fatal):",
+            notifErr.message,
+          );
+        }
+      })();
     }
 
     try {
