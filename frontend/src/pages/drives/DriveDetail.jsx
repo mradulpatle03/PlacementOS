@@ -32,6 +32,7 @@ import ApplyModal from "../../components/drive/ApplyModal";
 import { EligibilityBadge } from "../../components/drive/EligibilityBadge";
 import { Kanban } from "lucide-react";
 import { cn } from "@/lib/utils";
+import JDUpload from "@/components/drive/JDUpload";
 
 export default function DriveDetail() {
   const { id } = useParams();
@@ -315,22 +316,20 @@ export default function DriveDetail() {
               )}
 
               {/* JD */}
-              {drive.jd?.cloudinaryUrl && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Job Description</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setJdPreview(true)}
-                    >
-                      <FileText className="h-4 w-4 mr-2" /> Preview JD
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
+              {/* JD — always rendered now; JDUpload itself handles the empty/has-JD/can-manage states */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Job Description</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <JDUpload
+                    driveId={id}
+                    jd={drive.jd}
+                    canManage={isTPO}
+                    onPreview={() => setJdPreview(true)}
+                  />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* rounds */}
@@ -518,25 +517,6 @@ export default function DriveDetail() {
                     <span className="font-medium text-xs">{value}</span>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* TPO actions */}
-          {isTPO && drive.jd?.cloudinaryUrl && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setJdPreview(true)}
-                >
-                  <FileText className="h-4 w-4 mr-2" /> View JD
-                </Button>
               </CardContent>
             </Card>
           )}

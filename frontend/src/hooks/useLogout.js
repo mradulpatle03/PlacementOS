@@ -16,7 +16,7 @@ export function useLogout() {
     }
     dispatch(logout());
     showSuccess('Logged out');
-    navigate('/login');
+    navigate('/');
   };
 
   return handleLogout;

@@ -55,13 +55,13 @@ function StatBlock({
       <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
         <Icon className="w-6 h-6 text-primary" />
       </div>
-      <p className="text-3xl font-bold">
+      <div className="text-3xl font-bold">
         {loading ? (
           <Skeleton className="h-8 w-16 mx-auto" />
         ) : (
           <StatsCounter value={value} suffix={suffix} decimals={decimals} />
         )}
-      </p>
+      </div>
       <p className="text-sm text-muted-foreground mt-1">{label}</p>
     </div>
   );

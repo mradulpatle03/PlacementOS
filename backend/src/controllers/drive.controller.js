@@ -316,7 +316,8 @@ const uploadJD = async (req, res, next) => {
       folder: "placementos/jds",
       resource_type: "raw",
       public_id: `jd_${drive._id}_${Date.now()}`,
-      format: "pdf",
+      // format: "pdf",
+      type: "upload",
     });
 
     drive.jd = { cloudinaryUrl: result.secure_url, publicId: result.public_id };

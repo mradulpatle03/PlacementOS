@@ -12,6 +12,20 @@ const refreshClient = axios.create({
 
 let refreshPromise = null;
 
+const PUBLIC_PATHS = new Set([
+  '/',
+  '/success-stories',
+  '/about',
+  '/contact',
+  '/login',
+  '/register',
+  '/verify-email',
+  '/forgot-password',
+  '/reset-password',
+]);
+
+const isPublicPath = (path) => PUBLIC_PATHS.has(path);
+
 // Attach access token from localStorage if present
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
@@ -59,7 +73,9 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem('accessToken');
-        window.location.href = '/login';
+        if (!isPublicPath(window.location.pathname)) {
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       }
     }

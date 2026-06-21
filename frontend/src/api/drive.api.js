@@ -11,7 +11,7 @@ export const driveAPI = {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
   deleteJD: (id) => api.delete(`/drives/${id}/jd`),
-  getJDPreviewUrl: (id) => `/api/v1/drives/${id}/jd/preview`,
+  getJDPreviewUrl: (id) => `/drives/${id}/jd/preview`,
   getSummary: (id) => api.get(`/drives/${id}/summary`),
   getStats: () => api.get('/drives/stats'),
   getUpcoming: () => api.get('/drives/upcoming'),

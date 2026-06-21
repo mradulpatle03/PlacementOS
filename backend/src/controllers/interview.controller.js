@@ -13,6 +13,12 @@ const {
 } = require("../queues/interviewReminderQueue");
 const User = require("../models/User");
 
+const ROUND_ELIGIBLE_STAGES = {
+  interview_1: ["oa", "interview_1"],
+  interview_2: ["interview_1", "interview_2"],
+  hr: ["interview_2", "hr"],
+};
+
 // ─────────────────────────────────────────────────────────────
 // SLOT management (recruiter creates availability)
 // ─────────────────────────────────────────────────────────────
@@ -90,7 +96,8 @@ const getSlots = async (req, res, next) => {
 };
 
 // ── GET /api/v1/interviews/slots/available?driveId=&round= ───
-// Student sees available (not full) slots to book
+// Student sees available (not full) slots to book — only for rounds
+// they are currently eligible to book based on their pipeline stage.
 const getAvailableSlots = async (req, res, next) => {
   try {
     const { driveId, round } = req.query;
@@ -98,18 +105,72 @@ const getAvailableSlots = async (req, res, next) => {
     if (!driveId)
       return next(createError("driveId query param is required", 400));
 
-    const filter = { drive: driveId, isActive: true };
-    if (round) filter.round = round;
+    if (round && !ROUND_ELIGIBLE_STAGES[round]) {
+      return next(createError(`Unknown round '${round}'`, 400));
+    }
 
-    const slots = await InterviewSlot.find(filter)
-      .select("-bookedBy") // students don't need to see who else booked
-      .sort({ scheduledAt: 1 })
+    // resolve the student's application for this drive — eligibility
+    // is per-application, since the same student could (in theory)
+    // have applications across multiple drives at different stages
+    const student = await Student.findOne({ user: req.user._id }).lean();
+    if (!student) return next(createError("Student profile not found", 404));
+
+    const application = await Application.findOne({
+      student: student._id,
+      drive: driveId,
+    })
+      .select("status")
       .lean();
 
-    // only return slots that still have capacity
-    const available = slots
-      .map((s) => ({ ...s, seatsLeft: s.capacity - (s.bookedBy?.length || 0) }))
-      .filter((s) => s.seatsLeft > 0);
+    if (!application) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          total: 0,
+          slots: [],
+          reason: "You have not applied to this drive.",
+        },
+      });
+    }
+
+    // single round requested — gate it explicitly
+    if (round) {
+      const eligibleStages = ROUND_ELIGIBLE_STAGES[round];
+      if (!eligibleStages.includes(application.status)) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            total: 0,
+            slots: [],
+            reason: `Slots for ${round.replace("_", " ")} open once your application reaches the right stage (currently: ${application.status}).`,
+          },
+        });
+      }
+    }
+
+    // determine which rounds this student's current stage unlocks
+    const allowedRounds = round
+      ? [round]
+      : Object.keys(ROUND_ELIGIBLE_STAGES).filter((r) =>
+          ROUND_ELIGIBLE_STAGES[r].includes(application.status),
+        );
+
+    if (allowedRounds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          total: 0,
+          slots: [],
+          reason: `No interview rounds are open for your current stage (${application.status}) yet.`,
+        },
+      });
+    }
+
+    const filter = {
+      drive: driveId,
+      isActive: true,
+      round: { $in: allowedRounds },
+    };
 
     // re-fetch with actual count for seatsLeft (use aggregate to avoid lean virtual issue)
     const rawSlots = await InterviewSlot.find(filter).sort({ scheduledAt: 1 });
@@ -173,6 +234,19 @@ const bookSlot = async (req, res, next) => {
     if (application.drive.toString() !== slot.drive.toString()) {
       return next(
         createError("Application drive does not match slot drive", 400),
+      );
+    }
+
+    // ── stage gate: student must be at the correct pipeline stage ──
+    const eligibleStages = ROUND_ELIGIBLE_STAGES[slot.round] || [];
+    if (!eligibleStages.includes(application.status)) {
+      return next(
+        createError(
+          `You cannot book a ${slot.round.replace("_", " ")} slot yet. ` +
+            `Your application is currently at stage '${application.status}'. ` +
+            `Wait until a recruiter moves you to the right stage.`,
+          403,
+        ),
       );
     }
 
@@ -282,6 +356,21 @@ const deleteSlot = async (req, res, next) => {
 const scheduleInterview = async (req, res, next) => {
   try {
     const { application: applicationId, student: studentId, round } = req.body;
+
+    const application = await Application.findById(applicationId).lean();
+    if (!application) {
+      return next(createError("Application not found", 404));
+    }
+    const eligibleStages = ROUND_ELIGIBLE_STAGES[round] || [];
+    if (!eligibleStages.includes(application.status)) {
+      return next(
+        createError(
+          `Cannot schedule a ${round.replace("_", " ")} interview — ` +
+            `this candidate's application is at stage '${application.status}'.`,
+          400,
+        ),
+      );
+    }
 
     // check no duplicate for same application + round
     const existing = await Interview.findOne({
