@@ -201,27 +201,20 @@ const unlinkRecruiter = async (req, res, next) => {
 // GET /api/v1/companies/:id/recruiters
 const getCompanyRecruiters = async (req, res, next) => {
   try {
-    const company = await Company.findById(req.params.id)
-      .populate({
-        path: 'recruiters',
-        select: 'name email',
-        populate: {
-          path: 'recruiterProfile',
-          model: 'Recruiter',
-          localField: '_id',
-          foreignField: 'user',
-          select: 'designation isVerified',
-        },
-      });
+    const company = await Company.findById(req.params.id);
 
-    if (!company) return next(createError('Company not found', 404));
+    if (!company) {
+      return next(createError('Company not found', 404));
+    }
 
-    // get recruiter profiles separately for cleaner data
     const recruiterProfiles = await Recruiter.find({
       user: { $in: company.recruiters },
     }).populate('user', 'name email');
 
-    res.json({ success: true, recruiters: recruiterProfiles });
+    res.json({
+      success: true,
+      recruiters: recruiterProfiles,
+    });
   } catch (err) {
     next(err);
   }

@@ -71,6 +71,7 @@ const createAssessmentSchema = Joi.object({
   settings: settingsSchema.default(() => ({})),
   startsAt: Joi.date().allow(null),
   endsAt: Joi.date().allow(null),
+  status: Joi.string().valid('draft', 'active', 'closed').default('draft'),
 });
 
 // Update Assessment

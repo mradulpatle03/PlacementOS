@@ -13,6 +13,7 @@ import {
   FileText,
   Pencil,
   ExternalLink,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -130,14 +131,24 @@ export default function DriveDetail() {
               </>
             )}
             {isTPO && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/tpo/drives/${id}/pipeline`)}
-              >
-                <Kanban className="h-4 w-4 mr-2" />
-                View Pipeline
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/tpo/drives/${id}/pipeline`)}
+                >
+                  <Kanban className="h-4 w-4 mr-2" />
+                  View Pipeline
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/tpo/drives/${id}/assessments`)}
+                >
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  Assessments
+                </Button>
+              </>
             )}
             {!isTPO && (
               <DriveStatusControl

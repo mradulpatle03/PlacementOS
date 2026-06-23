@@ -23,11 +23,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../components/ui/alert-dialog";
-import { Loader2, FileText, Building2, Calendar } from "lucide-react";
+import { Loader2, FileText, Building2, Calendar, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CardListSkeleton } from "@/components/ui/skeletons";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
 
 // status badge config
 // const STATUS_CONFIG = {
@@ -96,8 +96,7 @@ const STATUS_CONFIG = {
 
   hr: {
     label: "HR Round",
-    class:
-      "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300",
+    class: "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300",
   },
 
   offered: {
@@ -142,6 +141,7 @@ const MyApplications = () => {
   const [withdrawId, setWithdrawId] = useState(null);
   const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["my-applications", statusFilter, page],
@@ -256,6 +256,21 @@ const MyApplications = () => {
                           <FileText className="w-3 h-3" />
                           View offer letter →
                         </Link>
+                      )}
+                      {/* Show Take Assessment button if there's a linked active assessment */}
+                      {app.activeAssessmentId && app.status === "oa" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            navigate(
+                              `/assessments/${app.activeAssessmentId}/take`,
+                            )
+                          }
+                        >
+                          <ClipboardList className="h-4 w-4 mr-1" />
+                          Take Assessment
+                        </Button>
                       )}
                     </div>
 

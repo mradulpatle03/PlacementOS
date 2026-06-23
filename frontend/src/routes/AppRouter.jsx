@@ -32,8 +32,8 @@ import DriveDetail from "@/pages/drives/DriveDetail";
 import MyApplications from "../pages/student/MyApplications";
 import DriveApplicants from "../pages/tpo/DriveApplicants";
 import PipelineBoard from "@/pages/tpo/PipelineBoard";
-import AssessmentTaker from "@/pages/student/AssessmentTaker";
 
+import AssessmentTaker from "@/pages/student/AssessmentTaker";
 import AssessmentList from "@/pages/tpo/AssessmentList";
 import AssessmentBuilder from "@/pages/tpo/AssessmentBuilder";
 import AssessmentSubmissions from "@/pages/tpo/AssessmentSubmissions";
@@ -173,6 +173,14 @@ export default function AppRouter() {
           path="/tpo/drives/:driveId/assessments/create"
           element={
             <RoleRoute roles={["tpo", "recruiter", "admin"]}>
+              <AssessmentBuilder />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/tpo/drives/:driveId/assessments/:id/edit"
+          element={
+            <RoleRoute roles={["tpo", "admin"]}>
               <AssessmentBuilder />
             </RoleRoute>
           }

@@ -5,6 +5,7 @@ const Drive = require("../models/Drive");
 const Resume = require("../models/Resume");
 const { checkEligibility } = require("../services/eligibility.service");
 const AppError = require("../utils/AppError");
+const Assessment = require('../models/Assessment');
 
 // POST /applications/apply
 // Student applies to a drive with a chosen resume
@@ -201,10 +202,39 @@ const getMyApplications = async (req, res, next) => {
       Application.countDocuments(filter),
     ]);
 
+    // enrich oa-status applications with their drive's active assessment id
+    const driveIdsAtOA = applications
+      .filter((a) => a.status === "oa")
+      .map((a) => a.drive?._id)
+      .filter(Boolean);
+
+    let assessmentMap = {};
+    if (driveIdsAtOA.length > 0) {
+      const assessments = await Assessment.find({
+        drive: { $in: driveIdsAtOA },
+        status: "active",
+      })
+        .select("_id drive")
+        .lean();
+
+      assessmentMap = assessments.reduce((acc, a) => {
+        acc[a.drive.toString()] = a._id;
+        return acc;
+      }, {});
+    }
+
+    const enriched = applications.map((app) => ({
+      ...app,
+      activeAssessmentId:
+        app.status === "oa"
+          ? (assessmentMap[app.drive?._id?.toString()] ?? null)
+          : null,
+    }));
+
     res.status(200).json({
       success: true,
       data: {
-        applications,
+        applications: enriched,
         pagination: {
           total,
           page: Number(page),
