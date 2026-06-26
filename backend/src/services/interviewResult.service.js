@@ -1,7 +1,11 @@
 const Interview = require("../models/Interview");
 const Application = require("../models/Application");
+const Student = require("../models/Student");
+const Company = require("../models/Company");
+const Drive = require("../models/Drive");
 const { validateStageTransition, STAGE_LABELS } = require("./pipeline.service");
 const { emitStageMoved, emitApplicationRejected } = require("../sockets");
+const { notifyApplicationStatus } = require("../queues/notificationQueue");
 
 // Round → result → next pipeline stage
 const NEXT_STAGE_MAP = {
@@ -10,17 +14,6 @@ const NEXT_STAGE_MAP = {
   hr: { pass: "offered", fail: "rejected", no_show: "rejected" },
 };
 
-/**
- * Given an interview result, advance the linked application's pipeline stage.
- *
- * @param {object} interview    - Interview mongoose doc (populated: drive, student.user)
- * @param {string} result       - 'pass' | 'fail' | 'no_show'
- * @param {string} feedback     - optional feedback text
- * @param {string} movedById    - user._id of the recruiter recording the result
- * @param {string} movedByName  - user.name of the recruiter
- *
- * @returns {{ moved: boolean, previousStage?, currentStage?, stageLabel?, reason? }}
- */
 const advancePipelineOnResult = async (
   interview,
   result,
@@ -89,6 +82,50 @@ const advancePipelineOnResult = async (
       movedBy: { _id: movedById, name: movedByName },
       note,
     });
+  }
+
+  // ── Notify student about stage change ──────────────────────
+  try {
+    // Resolve student → user for email + userId
+    const student = await Student.findById(application.student)
+      .populate("user", "name email")
+      .lean();
+
+    if (student?.user) {
+      // Resolve drive → company for notification context
+      const driveDoc = await Drive.findById(application.drive)
+        .select("title company")
+        .lean();
+      const company = driveDoc?.company
+        ? await Company.findById(driveDoc.company).select("name").lean()
+        : null;
+
+      const stageLabel = STAGE_LABELS[targetStage] || targetStage;
+
+      await notifyApplicationStatus(
+        student.user._id.toString(),
+        student.user.email,
+        {
+          studentName: student.user.name,
+          drive: {
+            _id: application.drive,
+            title: driveDoc?.title || "",
+          },
+          company: {
+            name: company?.name || "Company",
+          },
+          newStage: targetStage,
+          stageLabel,
+          note: note.trim(),
+        },
+      );
+    }
+  } catch (notifErr) {
+    // non-fatal — stage move already saved, don't roll back
+    console.error(
+      "[advancePipelineOnResult] Notification failed (non-fatal):",
+      notifErr.message,
+    );
   }
 
   return {

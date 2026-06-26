@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +25,7 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const location = useLocation();
   const from = location.state?.from?.pathname || "/dashboard";
@@ -39,6 +41,7 @@ export default function Login() {
       setLoading(true);
       const res = await authAPI.login(data);
       const { user, accessToken } = res.data;
+      queryClient.clear();
       localStorage.setItem("accessToken", accessToken);
       dispatch(setCredentials(user));
       navigate(from, { replace: true });

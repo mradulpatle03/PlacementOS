@@ -14,9 +14,9 @@ const {
 const User = require("../models/User");
 
 const ROUND_ELIGIBLE_STAGES = {
-  interview_1: ["oa", "interview_1"],
-  interview_2: ["interview_1", "interview_2"],
-  hr: ["interview_2", "hr"],
+  interview_1: ["interview_1"],
+  interview_2: ["interview_2"],
+  hr: ["hr"],
 };
 
 // ─────────────────────────────────────────────────────────────
