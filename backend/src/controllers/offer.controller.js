@@ -69,7 +69,8 @@ const uploadOffer = async (req, res, next) => {
       folder: `placementos/offers/${drive._id}`,
       resource_type: "raw",
       public_id: `offer_${applicationId}_${Date.now()}`,
-      format: "pdf",
+      // format: "pdf",
+      type: "upload",
     });
 
     console.log(`Offer uploaded to Cloudinary: ${cloudRes.public_id}`);

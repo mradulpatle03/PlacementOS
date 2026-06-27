@@ -5,7 +5,8 @@ const Drive = require("../models/Drive");
 const Resume = require("../models/Resume");
 const { checkEligibility } = require("../services/eligibility.service");
 const AppError = require("../utils/AppError");
-const Assessment = require('../models/Assessment');
+const Assessment = require("../models/Assessment");
+const mongoose = require("mongoose");
 
 // POST /applications/apply
 // Student applies to a drive with a chosen resume
@@ -294,7 +295,7 @@ const getApplicationsByDrive = async (req, res, next) => {
 
     // status breakdown counts — useful for the TPO Kanban header
     const statusCounts = await Application.aggregate([
-      { $match: { drive: require("mongoose").Types.ObjectId(driveId) } },
+      { $match: { drive: new mongoose.Types.ObjectId(driveId) } },
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 

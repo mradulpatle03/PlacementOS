@@ -1,13 +1,13 @@
-const Notification = require('../models/Notification');
-const AppError     = require('../utils/AppError');
+const Notification = require("../models/Notification");
+const AppError = require("../utils/AppError");
 
 // GET /api/v1/notifications
 const getNotifications = async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, unreadOnly = 'false' } = req.query;
+    const { page = 1, limit = 20, unreadOnly = "false" } = req.query;
 
     const filter = { recipient: req.user._id };
-    if (unreadOnly === 'true') filter.isRead = false;
+    if (unreadOnly === "true") filter.isRead = false;
 
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -26,7 +26,7 @@ const getNotifications = async (req, res, next) => {
       data: {
         total,
         unreadCount,
-        page:  Number(page),
+        page: Number(page),
         pages: Math.ceil(total / Number(limit)),
         notifications,
       },
@@ -41,7 +41,7 @@ const getUnreadCount = async (req, res, next) => {
   try {
     const count = await Notification.countDocuments({
       recipient: req.user._id,
-      isRead:    false,
+      isRead: false,
     });
     return res.status(200).json({ success: true, data: { count } });
   } catch (err) {
@@ -53,10 +53,10 @@ const getUnreadCount = async (req, res, next) => {
 const markRead = async (req, res, next) => {
   try {
     const notification = await Notification.findOne({
-      _id:       req.params.id,
+      _id: req.params.id,
       recipient: req.user._id,
     });
-    if (!notification) return next(new AppError('Notification not found', 404));
+    if (!notification) return next(new AppError("Notification not found", 404));
 
     if (!notification.isRead) {
       notification.isRead = true;
@@ -75,7 +75,7 @@ const markAllRead = async (req, res, next) => {
   try {
     const result = await Notification.updateMany(
       { recipient: req.user._id, isRead: false },
-      { $set: { isRead: true, readAt: new Date() } }
+      { $set: { isRead: true, readAt: new Date() } },
     );
     return res.status(200).json({
       success: true,
@@ -91,11 +91,13 @@ const markAllRead = async (req, res, next) => {
 const deleteNotification = async (req, res, next) => {
   try {
     const notification = await Notification.findOneAndDelete({
-      _id:       req.params.id,
+      _id: req.params.id,
       recipient: req.user._id,
     });
-    if (!notification) return next(new AppError('Notification not found', 404));
-    return res.status(200).json({ success: true, message: 'Notification deleted' });
+    if (!notification) return next(new AppError("Notification not found", 404));
+    return res
+      .status(200)
+      .json({ success: true, message: "Notification deleted" });
   } catch (err) {
     next(err);
   }
@@ -104,9 +106,9 @@ const deleteNotification = async (req, res, next) => {
 // GET /api/v1/notifications/preferences
 const getPreferences = async (req, res, next) => {
   try {
-    const User = require('../models/User');
+    const User = require("../models/User");
     const user = await User.findById(req.user._id)
-      .select('notificationPreferences')
+      .select("notificationPreferences")
       .lean();
 
     return res.status(200).json({
@@ -121,31 +123,40 @@ const getPreferences = async (req, res, next) => {
 // PATCH /api/v1/notifications/preferences
 const updatePreferences = async (req, res, next) => {
   try {
-    const User  = require('../models/User');
+    const User = require("../models/User");
     const { email = {}, inApp = {} } = req.body;
 
     const TYPES = [
-      'drive_opened', 'application_status', 'oa_reminder',
-      'interview_reminder', 'offer_released', 'result_declared', 'general',
+      "drive_opened",
+      "application_status",
+      "oa_reminder",
+      "interview_reminder",
+      "offer_released",
+      "result_declared",
+      "general",
     ];
 
     const setObj = {};
     TYPES.forEach((t) => {
-      if (typeof email[t] === 'boolean')
+      if (typeof email[t] === "boolean")
         setObj[`notificationPreferences.email.${t}`] = email[t];
-      if (typeof inApp[t] === 'boolean')
+      if (typeof inApp[t] === "boolean")
         setObj[`notificationPreferences.inApp.${t}`] = inApp[t];
     });
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { $set: setObj },
-      { new: true, select: 'notificationPreferences' }
-    ).lean();
+      {
+        returnDocument: "after",
+      },
+    )
+      .select("notificationPreferences")
+      .lean();
 
     return res.status(200).json({
       success: true,
-      message: 'Preferences updated',
+      message: "Preferences updated",
       data: { preferences: user.notificationPreferences },
     });
   } catch (err) {

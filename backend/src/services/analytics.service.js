@@ -31,6 +31,20 @@ const yearDateRange = (yearFilter) => {
   };
 };
 
+const getDriveIdsByYear = async (year) => {
+  const dateRange = yearDateRange(year);
+
+  if (Object.keys(dateRange).length === 0) return null;
+
+  const drives = await Drive.find({
+    createdAt: dateRange,
+  })
+    .select("_id")
+    .lean();
+
+  return drives.map((d) => d._id);
+};
+
 // ── TPO dashboard analytics ───────────────────────────────────
 
 /**
@@ -45,7 +59,16 @@ const yearDateRange = (yearFilter) => {
  *  - offerAcceptanceRate
  */
 const getTPOAnalytics = async ({ year } = {}) => {
-  const dateRange = yearDateRange(year);
+  // const dateRange = yearDateRange(year);
+  const driveIds = await getDriveIdsByYear(year);
+
+  const applicationFilter = {};
+
+  if (driveIds) {
+    applicationFilter.drive = {
+      $in: driveIds,
+    };
+  }
 
   // ── 1. Student placement stats ─────────────────────────────
   const studentStats = await Student.aggregate([
@@ -80,7 +103,7 @@ const getTPOAnalytics = async ({ year } = {}) => {
   // ── 2. Package stats from accepted applications ────────────
   // We get CTC from Drive.roles — join via application → drive
   const acceptedApps = await Application.aggregate([
-    { $match: { status: "accepted" } },
+    { $match: { status: "accepted", ...applicationFilter } },
     {
       $lookup: {
         from: "drives",
@@ -154,7 +177,12 @@ const getTPOAnalytics = async ({ year } = {}) => {
 
   // ── 4. Top companies by offers ─────────────────────────────
   const topCompaniesAgg = await Application.aggregate([
-    { $match: { status: { $in: ["offered", "accepted"] } } },
+    {
+      $match: {
+        status: { $in: ["offered", "accepted"] },
+        ...applicationFilter,
+      },
+    },
     {
       $lookup: {
         from: "drives",
@@ -206,6 +234,7 @@ const getTPOAnalytics = async ({ year } = {}) => {
   const [offeredCount, acceptedCount] = await Promise.all([
     Application.countDocuments({
       status: { $in: ["offered", "accepted", "rejected"] },
+      ...applicationFilter,
     }),
     Application.countDocuments({ status: "accepted" }),
   ]);
@@ -241,6 +270,18 @@ const getBranchAnalytics = async ({ branch, year } = {}) => {
 
   // students in this branch
   const studentFilter = { branch };
+
+  const driveIds = await getDriveIdsByYear(year);
+
+  const applicationFilter = {
+    student: { $in: ids },
+  };
+
+  if (driveIds) {
+    applicationFilter.drive = {
+      $in: driveIds,
+    };
+  }
 
   const branchStudents = await Student.aggregate([
     { $match: studentFilter },
@@ -279,7 +320,7 @@ const getBranchAnalytics = async ({ branch, year } = {}) => {
   const ids = studentIds.map((s) => s._id);
 
   const applicationFunnel = await Application.aggregate([
-    { $match: { student: { $in: ids } } },
+    { $match: applicationFilter },
     {
       $group: {
         _id: "$status",
@@ -295,7 +336,7 @@ const getBranchAnalytics = async ({ branch, year } = {}) => {
 
   // package stats for accepted from this branch
   const acceptedFromBranch = await Application.aggregate([
-    { $match: { student: { $in: ids }, status: "accepted" } },
+    { $match: { ...applicationFilter , status: "accepted" } },
     {
       $lookup: {
         from: "drives",
@@ -728,7 +769,7 @@ const getDriveConversionSummary = async ({ limit = 10 } = {}) => {
         as: "company",
       },
     },
-    { $unwind: { path: "$company", preserveNullAndEmpty: true } },
+    { $unwind: { path: "$company", preserveNullAndEmptyArrays: true } },
     {
       $addFields: {
         conversionRate: {
