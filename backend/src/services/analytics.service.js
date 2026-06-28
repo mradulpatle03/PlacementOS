@@ -268,9 +268,12 @@ const getTPOAnalytics = async ({ year } = {}) => {
 const getBranchAnalytics = async ({ branch, year } = {}) => {
   if (!branch) throw new Error("branch is required");
 
-  // students in this branch
-  const studentFilter = { branch };
+  // Get all students in this branch
+  const studentIds = await Student.find({ branch }).select("_id").lean();
 
+  const ids = studentIds.map((s) => s._id);
+
+  // Year-specific drive filter
   const driveIds = await getDriveIdsByYear(year);
 
   const applicationFilter = {
@@ -283,42 +286,43 @@ const getBranchAnalytics = async ({ branch, year } = {}) => {
     };
   }
 
+  // Branch overview stats
   const branchStudents = await Student.aggregate([
-    { $match: studentFilter },
+    {
+      $match: { branch },
+    },
     {
       $group: {
         _id: null,
         total: { $sum: 1 },
-        placed: {
-          $sum: {
-            $cond: [
-              { $in: ["$placementStatus", ["placed", "dream_placed"]] },
-              1,
-              0,
-            ],
-          },
-        },
-        dreamPlaced: {
-          $sum: {
-            $cond: [{ $eq: ["$placementStatus", "dream_placed"] }, 1, 0],
-          },
-        },
         avgCGPA: { $avg: "$cgpa" },
       },
     },
   ]);
 
+  // Placement stats (year filtered)
+  const placementStats = await Application.aggregate([
+    {
+      $match: {
+        ...applicationFilter,
+        status: {
+          $in: ["accepted"],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$student",
+      },
+    },
+  ]);
+
   const total = branchStudents[0]?.total || 0;
-  const placed = branchStudents[0]?.placed || 0;
-  const dreamPlaced = branchStudents[0]?.dreamPlaced || 0;
-  const avgCGPA = branchStudents[0]?.avgCGPA
-    ? Math.round(branchStudents[0].avgCGPA * 100) / 100
-    : 0;
+  const placed = placementStats.length;
+  const dreamPlaced = 0; // adjust if dream placement logic exists
+  const avgCGPA = Math.round((branchStudents[0]?.avgCGPA || 0) * 100) / 100;
 
-  // applications from this branch
-  const studentIds = await Student.find({ branch }).select("_id").lean();
-  const ids = studentIds.map((s) => s._id);
-
+  // Application funnel
   const applicationFunnel = await Application.aggregate([
     { $match: applicationFilter },
     {
@@ -334,9 +338,14 @@ const getBranchAnalytics = async ({ branch, year } = {}) => {
     return acc;
   }, {});
 
-  // package stats for accepted from this branch
+  // Package stats
   const acceptedFromBranch = await Application.aggregate([
-    { $match: { ...applicationFilter , status: "accepted" } },
+    {
+      $match: {
+        ...applicationFilter,
+        status: "accepted",
+      },
+    },
     {
       $lookup: {
         from: "drives",

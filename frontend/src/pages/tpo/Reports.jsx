@@ -513,11 +513,14 @@ export default function Reports() {
           status: statusFilter !== "all" ? statusFilter : undefined,
         })
         .then((r) => r.data.data),
-    refetchInterval: (data) => {
-      // auto-refresh every 5s while any report is processing/queued
-      const hasActive = data?.reports?.some((r) =>
+
+    refetchInterval: (query) => {
+      const reports = query.state.data?.reports || [];
+
+      const hasActive = reports.some((r) =>
         ["queued", "processing"].includes(r.status),
       );
+
       return hasActive ? 5000 : false;
     },
   });
@@ -528,12 +531,19 @@ export default function Reports() {
   // generate mutation
   const generateMutation = useMutation({
     mutationFn: (payload) => reportAPI.generate(payload),
+
     onMutate: () => setGenerating(true),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reports"] });
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["reports"],
+      });
+
       toast.success("Report queued! You'll receive an email when it's ready.");
+
       setGenerating(false);
     },
+
     onError: (err) => {
       toast.error(err?.response?.data?.message || "Failed to queue report");
       setGenerating(false);

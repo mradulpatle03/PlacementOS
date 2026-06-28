@@ -21,13 +21,25 @@ const Drive = require("../models/Drive");
 
 // ── upload helper ─────────────────────────────────────────────
 const uploadReport = async (buffer, reportId, format) => {
+  const extensionMap = {
+    xlsx: "xlsx",
+    pdf: "pdf",
+    csv: "csv",
+  };
+
+  const extension = extensionMap[format] || "bin";
+
   const result = await uploadBufferToCloudinary(buffer, {
     folder: "placementos/reports",
     resource_type: "raw",
-    public_id: `report_${reportId}_${Date.now()}`,
-    format,
+    type: "upload",
+    public_id: format === "pdf" ? `report_${reportId}_${Date.now()}` : `report_${reportId}_${Date.now()}.${extension}`,
   });
-  return { fileUrl: result.secure_url, publicId: result.public_id };
+
+  return {
+    fileUrl: result.secure_url,
+    publicId: result.public_id,
+  };
 };
 
 // ── email notification ────────────────────────────────────────
@@ -250,7 +262,7 @@ const startReportWorker = () => {
         const report = await Report.findByIdAndUpdate(
           reportId,
           { status: "completed", fileUrl, publicId, completedAt: new Date() },
-          { new: true },
+          { returnDocument: "after" },
         );
 
         await notifyReportReady(job.data.notifyEmail, report.title, fileUrl);
