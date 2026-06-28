@@ -20,11 +20,15 @@ const announcementSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-announcementSchema.index({ isActive: 1, expiresAt: 1 });
-// auto-expire docs 30 days after expiresAt
-announcementSchema.index(
-  { expiresAt: 1 },
-  { expireAfterSeconds: 0, sparse: true },
-);
+// announcementSchema.index({ isActive: 1, expiresAt: 1 });
+// // auto-expire docs 30 days after expiresAt
+// announcementSchema.index(
+//   { expiresAt: 1 },
+//   { expireAfterSeconds: 0, sparse: true },
+// );
+
+// Index for querying active announcements efficiently — no TTL auto-delete
+announcementSchema.index({ isActive: 1, createdAt: -1 });
+announcementSchema.index({ expiresAt: 1 });
 
 module.exports = mongoose.model("Announcement", announcementSchema);

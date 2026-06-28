@@ -209,6 +209,7 @@ const getActiveAnnouncements = async (req, res, next) => {
 
     const filter = {
       isActive: true,
+      targetRoles: req.user.role,
       $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
     };
 
