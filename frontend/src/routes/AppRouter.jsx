@@ -60,6 +60,8 @@ import SuccessStories from "@/pages/public/SuccessStories";
 import About from "@/pages/public/About";
 import Contact from "@/pages/public/Contact";
 
+import { Outlet } from "react-router-dom";
+
 export default function AppRouter() {
   return (
     <Routes>
@@ -255,15 +257,6 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-        {/* OA taker — student */}
-        <Route
-          path="/assessments/:assessmentId/take"
-          element={
-            <RoleRoute roles={["student"]}>
-              <AssessmentTaker />
-            </RoleRoute>
-          }
-        />
         <Route
           path="/offers"
           element={
@@ -361,8 +354,13 @@ export default function AppRouter() {
           }
         />
       </Route>
-      {/* Protected routes WITHOUT AppLayout — fullscreen */}
-      {/* <Route element={<ProtectedRoute />}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
+        }
+      >
         <Route
           path="/assessments/:assessmentId/take"
           element={
@@ -371,7 +369,7 @@ export default function AppRouter() {
             </RoleRoute>
           }
         />
-      </Route> */}
+      </Route>
 
       {/* Misc */}
       <Route path="/unauthorized" element={<Unauthorized />} />

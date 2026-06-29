@@ -22,10 +22,6 @@ function Hero({ stats, loading }) {
   return (
     <section className="relative overflow-hidden bg-linear-to-br from-primary/5 via-background to-background py-20 sm:py-28">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-6">
-          <Sparkles className="w-3.5 h-3.5" />
-          Digitizing campus placements end-to-end
-        </div>
 
         <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-tight">
           Your career journey
@@ -152,7 +148,7 @@ function RecruitersGrid({ companies, loading }) {
             {companies.map((c) => (
               <div
                 key={c._id}
-                className="flex flex-col items-center justify-center gap-2 bg-card border rounded-xl p-4 h-20 hover:shadow-md transition-shadow"
+                className="flex flex-col items-center justify-center gap-2 bg-card border rounded-xl p-4 h-24 hover:shadow-md transition-shadow"
               >
                 {c.logo ? (
                   <img

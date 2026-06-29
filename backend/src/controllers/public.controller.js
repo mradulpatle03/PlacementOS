@@ -20,12 +20,15 @@ const getStats = async (req, res, next) => {
 const getRecruiterShowcase = async (req, res, next) => {
   try {
     const data = await withCache("public:recruiters", 10 * 60, async () => {
-      const companies = await Company.find({ isVerified: true })
+      const companies = await Company.find({ isActive: true })
         .select("name logo sector location")
         .sort({ createdAt: -1 })
         .limit(40)
         .lean();
-      return companies;
+      return companies.map((c) => ({
+        ...c,
+        logo: c.logo?.cloudinaryUrl || null,
+      }));
     });
 
     return res.status(200).json({ success: true, data: { companies: data } });

@@ -63,7 +63,7 @@ const getPublicStats = async () => {
     : 0;
 
   // ── recruiting companies ─────────────────────────────────────
-  const totalCompanies = await Company.countDocuments({ isVerified: true });
+  const totalCompanies = await Company.countDocuments({ isActive: true });
   const totalDrivesCompleted = await Drive.countDocuments({
     status: "completed",
   });
@@ -93,7 +93,7 @@ const getPublicStats = async () => {
       $group: {
         _id: "$companyData._id",
         name: { $first: "$companyData.name" },
-        logo: { $first: "$companyData.logo" },
+        logo: { $first: "$companyData.logo.cloudinaryUrl" },
         hires: { $sum: 1 },
       },
     },

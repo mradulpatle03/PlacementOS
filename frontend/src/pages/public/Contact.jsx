@@ -5,12 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { SEO } from "@/components/seo/SEO";
 
+const TPO_EMAIL = import.meta.env.VITE_TPO_EMAIL || "mradul.explified@gmail.com";
+
 const CONTACT_INFO = [
   {
     icon: Mail,
     label: "Email",
-    value: "tpo@college.edu",
-    href: "mailto:tpo@college.edu",
+    value: TPO_EMAIL,
+    href: `mailto:${TPO_EMAIL}`,
   },
   {
     icon: Phone,
@@ -52,7 +54,7 @@ export default function Contact() {
     const body = encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\nRole: ${form.role}\n\n${form.message}`,
     );
-    window.location.href = `mailto:tpo@college.edu?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${TPO_EMAIL}?subject=${subject}&body=${body}`;
 
     setSubmitted(true);
     toast.success("Opening your mail client…");
