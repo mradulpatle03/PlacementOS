@@ -115,12 +115,27 @@ const updateSkills = async (req, res, next) => {
 // TPO/admin gets all students with optional filters
 const getAllStudents = async (req, res, next) => {
   try {
-    const { branch, graduationYear, placementStatus, page = 1, limit = 20 } = req.query;
+    const {
+      branch, graduationYear, placementStatus, search,
+      page = 1, limit = 20,
+    } = req.query;
 
     const filter = {};
     if (branch) filter.branch = branch;
     if (graduationYear) filter.graduationYear = Number(graduationYear);
     if (placementStatus) filter.placementStatus = placementStatus;
+
+    // search by name/email (via User) or roll number (on Student itself)
+    if (search?.trim()) {
+      const regex = new RegExp(search.trim(), 'i');
+      const matchingUsers = await User.find({
+        $or: [{ name: regex }, { email: regex }],
+      }).select('_id');
+      filter.$or = [
+        { rollNumber: regex },
+        { user: { $in: matchingUsers.map((u) => u._id) } },
+      ];
+    }
 
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -151,7 +166,9 @@ const getAllStudents = async (req, res, next) => {
 // TPO/admin gets a specific student
 const getStudentById = async (req, res, next) => {
   try {
-    const student = await Student.findById(req.params.id).populate('user', 'name email isActive');
+    const student = await Student.findById(req.params.id)
+      .populate('user', 'name email isActive')
+      .populate('offeredBy', 'name logo sector');
     if (!student) return next(createError('Student not found', 404));
     res.json({ success: true, student });
   } catch (err) {

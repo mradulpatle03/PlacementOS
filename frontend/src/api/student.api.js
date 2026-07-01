@@ -8,4 +8,8 @@ export const studentAPI = {
   updateProject: (projectId, data) => api.put(`/students/me/projects/${projectId}`, data),
   deleteProject: (projectId) => api.delete(`/students/me/projects/${projectId}`),
   getCompleteness: () => api.get('/students/me/completeness'),
+
+  // TPO / Admin / Coordinator — student directory
+  getAll: (params = {}) => api.get('/students', { params }),
+  getById: (id) => api.get(`/students/${id}`),
 };

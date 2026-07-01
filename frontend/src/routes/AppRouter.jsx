@@ -53,6 +53,8 @@ import RecruiterDashboard from "@/pages/recruiter/RecruiterDashboard";
 import Reports from "@/pages/tpo/Reports";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AuditLogs from "@/pages/admin/AuditLogs";
+import StudentDirectory from "@/pages/tpo/StudentDirectory";
+import StudentProfileDetail from "@/pages/tpo/StudentProfileDetail";
 
 import PublicLayout from "@/components/layout/PublicLayout";
 import Home from "@/pages/public/Home";
@@ -136,6 +138,22 @@ export default function AppRouter() {
           element={
             <RoleRoute roles={["tpo", "admin", "coordinator", "recruiter"]}>
               <CompanyDetail />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/students"
+          element={
+            <RoleRoute roles={["tpo", "admin", "coordinator"]}>
+              <StudentDirectory />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/students/:id"
+          element={
+            <RoleRoute roles={["tpo", "admin", "coordinator"]}>
+              <StudentProfileDetail />
             </RoleRoute>
           }
         />
